@@ -16,26 +16,56 @@
 #' @param cell_name_col The name of the column that contains the cell identifier
 #' @param exp_percentage Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis
 #' @param parallel Perform analysis in parallel
+#' @param save_results Whether to save results to an RDS file (default: FALSE)
 #' @param savepath Path where the results of the analysis should be saved
 #'
 #' @return A dataframe with the DEseq2 results with an additional column indicating the cluster
 #' @export
 #'
 #' @examples
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, parallel = FALSE, savepath = "../../RDS/DGE") {
-  library(tictoc)
-  library(future.apply)
-  library(DESeq2)
-
+#' \dontrun{
+#' library(tidyverse)
+#' library(Seurat)
+#' library(SeuratData)
+#' InstallData("ifnb")
+#' pbmc_ifnb <- LoadData("ifnb")
+#'
+#' # Simulate some donors
+#' add_donors <- pbmc_ifnb@meta.data %>%
+#'   rownames_to_column("cell_name") %>%
+#'   group_by(stim) %>%
+#'   mutate(simulated_donors = sample(3, n(), replace = TRUE)) %>%
+#'   ungroup %>%
+#'   mutate(simulated_donors = str_c(simulated_donors, "_", stim)) %>%
+#'   column_to_rownames("cell_name") %>%
+#'   select(simulated_donors)
+#'add_donors$cell_name <- rownames(add_donors)
+#'pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
+#'test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
+#'  md = pbmc_ifnb@meta.data,
+#'  cluster_col = seurat_annotations,
+#'  sample_col = simulated_donors,
+#'  group_col = stim,
+#'  group1 = "CTRL",
+#'  group2 = "STIM",
+#'  design = ~stim,
+#'  n_cells_normalize = 10000,
+#'  n_cells_min = 20,
+#'  min_n_samples_group = 3,
+#'  cell_name_col = cell_name,
+#'  exp_percentage = 5,
+#'  parallel = FALSE)
+#'  }
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, parallel = FALSE, save_results = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
   if(parallel) {
     options(future.globals.maxSize = 20*1024^3)
-    plan(multisession(workers = 4, gc = TRUE))
+    future::plan(multisession(workers = 4, gc = TRUE))
   } else {
     options(future.globals.maxSize = 20*1024^3)
-    plan(sequential)
+    future::plan(future::sequential)
   }
 
   md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{ add_var }}) %>% distinct() %>% ungroup %>% as.data.frame()
@@ -61,8 +91,8 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NU
   }
   cells_cluster_sample <- cells_cluster_sample[!is.na(cells_cluster_sample)]
 
-  tic()
-  results <- suppressMessages(future_lapply(X = cells_cluster_sample, FUN = function(x) {
+  tictoc::tic()
+  results <- suppressMessages(future.apply::future_lapply(X = cells_cluster_sample, FUN = function(x) {
     x <- map(x, function(x) {m[,x]})
     # Subset on genes, which are at least expressed in x% of cells of each sample within a group
     sample_genes <- map(x, ~rownames(.[Matrix::rowSums(. > 0) >= ncol(.)*exp_percentage/100,]))
@@ -90,22 +120,24 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NU
     rownames(fData) <- rows
     cData <- md_persample %>% filter(get(sample_col_str) %in% colnames(x))
     x <- x[,rownames(cData)]
-    DEG <- DESeqDataSetFromMatrix(countData = x,
+    DEG <- DESeq2::DESeqDataSetFromMatrix(countData = x,
                                   colData = cData,
                                   design = design)
 
-    DEG <- DESeq(DEG)
-    res <- results(DEG, pAdjustMethod = "fdr") %>% as.data.frame() %>% mutate(gene = rownames(.))
+    DEG <- DESeq2::DESeq(DEG)
+    res <- DESeq2::results(DEG, pAdjustMethod = "fdr") %>% as.data.frame() %>% mutate(gene = rownames(.))
     return(res)
   }))
 
   results <- map2(.x = names(results), .y = results, ~mutate(.y, {{ cluster_col }} := .x))
-  toc()
+  tictoc::toc()
 
   # the following is way faster than using purrr:reduce calls
   results <- results %>% do.call(rbind, .) %>% as_tibble
   future:::ClusterRegistry("stop")
-  dir.create(savepath, recursive = TRUE)
-  saveRDS(results, str_c(savepath, "/DGE_", n_cells_normalize, "_cells_", deparse(substitute(cluster_col)), "_", title, ".RDS"))
+  if(save_results) {
+    dir.create(savepath, recursive = TRUE)
+    saveRDS(results, str_c(savepath, "/DGE_", n_cells_normalize, "_cells_", deparse(substitute(cluster_col)), "_", title, ".RDS"))
+  }
   return(results)
 }
