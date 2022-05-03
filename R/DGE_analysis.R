@@ -24,7 +24,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(tidyverse)
 #' library(Seurat)
 #' library(SeuratData)
 #' InstallData("ifnb")
