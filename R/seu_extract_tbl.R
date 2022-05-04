@@ -23,7 +23,7 @@
 #'   reduction = "umap",
 #'   metadata_cols = c("nCount_RNA", "nFeature_RNA", "seurat_clusters"),
 #'   extract_expr = TRUE,
-#'   genes_extract = c("NCAM1", "SELL", "CD3"),
+#'   genes_extract = c("NCAM1", "SELL", "CD3D"),
 #'   assay_extract = "RNA",
 #'   slot_extract = "data",
 #'   expr_format = "wide")
@@ -34,23 +34,32 @@ seu_extract_tbl <- function(seu_x, reduction, metadata_cols = "all", extract_exp
 
   # extract reduction
   if(!is.null(reduction)) {
-    df_list <- seu_x@reductions[[reduction]]@cell.embeddings %>%
-      as.data.frame() %>%
-      rownames_to_column("cell_name") %>%
-      as_tibble() %>%
-      list %>%
-      append(df_list, .)
+    if(reduction %in% names(seu_x@reductions)) {
+      df_list <- seu_x@reductions[[reduction]]@cell.embeddings %>%
+        as.data.frame() %>%
+        rownames_to_column("cell_name") %>%
+        as_tibble() %>%
+        list %>%
+        append(df_list, .)
+    } else {
+      stop("Reduction not found in seurat object!")
+    }
   }
 
   # extract metadata
-  if(metadata_cols == "all") {metadata_cols <- colnames(seu_x@meta.data)}
+  if(metadata_cols[[1]] == "all") {metadata_cols <- colnames(seu_x@meta.data)}
   if(!is.null(metadata_cols)) {
-    df_list <- seu_x@meta.data[,metadata_cols] %>%
-      as.data.frame() %>%
-      rownames_to_column("cell_name") %>%
-      as_tibble() %>%
-      list %>%
-      append(df_list, .)
+    if(all(metadata_cols %in% colnames(seu_x@meta.data))) {
+      df_list <- seu_x@meta.data[,metadata_cols] %>%
+        as.data.frame() %>%
+        rownames_to_column("cell_name") %>%
+        as_tibble() %>%
+        list %>%
+        append(df_list, .)
+    } else {
+      stop(glue::glue("Error: The following columns are not found in metadata: {metadata_cols[!(metadata_cols %in% colnames(seu_x@meta.data))] %>% str_c(collapse = ', ')}\n"))
+    }
+
   }
 
   # extract expression data
@@ -58,23 +67,27 @@ seu_extract_tbl <- function(seu_x, reduction, metadata_cols = "all", extract_exp
     if(genes_extract[[1]] == "all") {
       genes_extract <- rownames(seu_x)
     }
-    m <- seu_x@assays[[assay_extract]] %>% slot(slot_extract)
-    m <- m[rownames(m) %in% genes_extract,]
-    if(length(genes_extract) == 1) {
-      tbl_temp <- tibble(cell_name = names(m), !!genes_extract := m)
-    } else {
-      tbl_temp <- m %>% as.matrix %>% t %>% as.data.frame() %>% rownames_to_column("cell_name") %>% as_tibble()
-    }
+    if(all(genes_extract %in% (seu_x@assays[[assay_extract]] %>% slot(slot_extract) %>% rownames))) {
+      m <- seu_x@assays[[assay_extract]] %>% slot(slot_extract)
+      m <- m[rownames(m) %in% genes_extract,]
+      if(length(genes_extract) == 1) {
+        tbl_temp <- tibble(cell_name = names(m), !!genes_extract := m)
+      } else {
+        tbl_temp <- m %>% as.matrix %>% t %>% as.data.frame() %>% rownames_to_column("cell_name") %>% as_tibble()
+      }
 
-    if(expr_format[[1]] == "wide") {
-      df_list <- tbl_temp %>%
-        list %>%
-        append(df_list, .)
-    } else if(expr_format[[1]] == "long") {
-      df_list <- tbl_temp %>%
-        pivot_longer(-cell_name, names_to = "gene", values_to = "expr") %>%
-        list %>%
-        append(df_list, .)
+      if(expr_format[[1]] == "wide") {
+        df_list <- tbl_temp %>%
+          list %>%
+          append(df_list, .)
+      } else if(expr_format[[1]] == "long") {
+        df_list <- tbl_temp %>%
+          pivot_longer(-cell_name, names_to = "gene", values_to = "expr") %>%
+          list %>%
+          append(df_list, .)
+      }
+    } else {
+        stop(glue::glue("Error: The following genes are not found in the expression data: {genes_extract[!(genes_extract %in% (seu_x@assays[[assay_extract]] %>% slot(slot_extract) %>% rownames))] %>% str_c(collapse = ', ')}\n"))
     }
   }
 
