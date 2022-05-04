@@ -2,6 +2,7 @@
 
 export("%>%")
 export(DGE_analysis)
+export(apply_quantile_cutoffs)
 export(plot_layout_mm)
 export(png_save_show)
 export(seu_extract_tbl)
