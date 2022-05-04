@@ -18,3 +18,8 @@ png_save_show(plot, file, show_plot = TRUE, ...)
 \description{
 Wrapper for bro::bro_ggsave_paged with unit set to "mm" and automatic inclusion of the png image in the knitted document
 }
+\examples{
+p <- ggplot(mtcars, aes(mpg, cyl)) +
+  geom_point()
+  png_save_show(p, "~/mtcars.png", width = 89, height = 89)
+}

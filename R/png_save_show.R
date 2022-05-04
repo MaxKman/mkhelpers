@@ -9,6 +9,10 @@
 #' @export
 #'
 #' @examples
+#' p <- ggplot(mtcars, aes(mpg, cyl)) +
+#'   geom_point()
+#'   png_save_show(p, "~/mtcars.png", width = 89, height = 89)
+
 png_save_show <- function(plot, file, show_plot = TRUE, ...) {
   bro::bro_ggsave_paged(gg = plot,
                         filename = file,
@@ -18,3 +22,4 @@ png_save_show <- function(plot, file, show_plot = TRUE, ...) {
     knitr::include_graphics(file)
   }
 }
+
