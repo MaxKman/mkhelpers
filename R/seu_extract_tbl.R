@@ -92,5 +92,5 @@ seu_extract_tbl <- function(seu_x, reduction, metadata_cols = "all", extract_exp
   }
 
   # turn list into one joined tibble
-  reduce(df_list, left_join)
+  suppressMessages(reduce(df_list, left_join))
 }
