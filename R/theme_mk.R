@@ -1,3 +1,5 @@
+#' Costum ggplot2 theme
+#' @export
 theme_mk <- theme_bw() + theme(
   text = element_text(size = 7),
   axis.text.x = element_text(size = 6),
