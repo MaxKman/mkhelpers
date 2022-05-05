@@ -42,7 +42,7 @@
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "Seurat clusters", feature_x = seurat_clusters, order_values = "random", show_legend = FALSE, show_labels = TRUE, point_size = 0.5)
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "CD3 expression", feature_x = CD3D, point_size = 0.5)
 #' }
-plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), point_size = 0.3, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
+plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
 
   if(order_values[[1]] == "sorted") {
     tbl_x <- tbl_x %>%
@@ -55,7 +55,8 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   p <- ggplot2::ggplot(tbl_x, aes({{umap_dim_col_1}}, {{umap_dim_col_2}}, color = {{feature_x}})) +
     mkhelpers::theme_mk +
     labs(x = "UMAP 1", y = "UMAP 2", title = title) +
-    geom_point(stroke = 0, size = point_size, alpha = alpha)
+    geom_point(stroke = 0, size = point_size, alpha = alpha) +
+    guides(color = guide_legend(override.aes = list(size = point_size_legend)))
 
   if(tbl_x %>% pull({{feature_x}}) %>% class == "numeric") {mode <- "continuous"}
   if(tbl_x %>% pull({{feature_x}}) %>% class %in% c("character", "factor")) {mode <- "discrete"}

@@ -17,6 +17,7 @@ plot_umap(
   dpi = 300,
   order_values = c("sorted", "random"),
   point_size = 0.3,
+  point_size_legend = 1.5,
   alpha = 1,
   plot_width = 60,
   plot_height = 60,
