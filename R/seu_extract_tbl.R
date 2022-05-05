@@ -50,9 +50,10 @@ seu_extract_tbl <- function(seu_x, reduction, metadata_cols = "all", extract_exp
   if(metadata_cols[[1]] == "all") {metadata_cols <- colnames(seu_x@meta.data)}
   if(!is.null(metadata_cols)) {
     if(all(metadata_cols %in% colnames(seu_x@meta.data))) {
-      df_list <- seu_x@meta.data[,metadata_cols] %>%
+      df_list <- seu_x@meta.data %>%
         as.data.frame() %>%
         rownames_to_column("cell_name") %>%
+        .[,c("cell_name", metadata_cols)] %>%
         as_tibble() %>%
         list %>%
         append(df_list, .)
