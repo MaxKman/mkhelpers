@@ -10,6 +10,7 @@ theme_mk <- theme_bw() + theme(
   strip.background = element_blank(),
   line = element_line(size = 0.3),
   legend.background = element_blank(),
+  legend.key.size = unit(2.5, "mm"),
   panel.grid.major = element_blank(),
   panel.grid.minor = element_blank()
 )
