@@ -29,6 +29,11 @@
 #'   expr_format = "wide")
 #' }
 seu_extract_tbl <- function(seu_x, reduction, metadata_cols = "all", extract_expr = FALSE, genes_extract = "all", assay_extract = "RNA", slot_extract = "data", expr_format = c("wide", "long")) {
+
+  if("cell_name" %in% colnames(seu_x)) {
+    seu_x@meta.data <- seu_x@meta.data %>% select(-cell_name)
+  }
+
   # make a list for appending dataframes
   df_list <- list(tibble(cell_name = colnames(seu_x)))
 
