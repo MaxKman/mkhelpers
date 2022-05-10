@@ -3,7 +3,7 @@ Type: Package
 Title: My little helper functions
 Version: 0.0.1
 Author: Max Kaufmann
-Maintainer: max.ka@gmx.de
+Maintainer: Max Kaufmann <max.ka@gmx.de>
 Description: A collection of my own functions that I frequently use in bioinformatic analyses.
 License: MIT + file LICENSE
 Encoding: UTF-8
