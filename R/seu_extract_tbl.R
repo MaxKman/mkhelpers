@@ -30,7 +30,7 @@
 #' }
 seu_extract_tbl <- function(seu_x, reduction, metadata_cols = "all", extract_expr = FALSE, genes_extract = "all", assay_extract = "RNA", slot_extract = "data", expr_format = c("wide", "long")) {
 
-  if("cell_name" %in% colnames(seu_x)) {
+  if("cell_name" %in% colnames(seu_x@meta.data)) {
     seu_x@meta.data <- seu_x@meta.data %>% select(-cell_name)
   }
 
