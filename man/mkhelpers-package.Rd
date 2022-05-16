@@ -4,9 +4,8 @@
 \name{mkhelpers-package}
 \alias{mkhelpers}
 \alias{mkhelpers-package}
-\title{mkhelpers: What the Package Does (Title Case)}
+\title{mkhelpers: My little helper functions}
 \description{
-More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+A collection of my own functions that I frequently use in bioinformatic analyses.
 }
 \keyword{internal}

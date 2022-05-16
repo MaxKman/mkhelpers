@@ -28,7 +28,7 @@
 #'    expr_format = "wide")
 #' plot_umap_grid(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~/test_plot_umap_grid.png", feature_list = c("seurat_clusters", "CD3D", "CD19"), show_labels = TRUE, point_size = 0.5)
 #' }
-plot_umap_grid <- function(tbl_x, feature_list, quantile_limits_list = NULL, n_cols = 3, out_width = 183, output_path, ...) {
+plot_umap_grid <- function(tbl_x, feature_list, quantile_limits_list = NULL, n_cols = 3, out_width = 180, output_path, ...) {
   n_plots <- length(feature_list)
   col_width <- out_width / n_cols
   out_height <- ceiling(n_plots / n_cols) * col_width * 0.8

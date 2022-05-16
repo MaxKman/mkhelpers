@@ -51,9 +51,9 @@ plot_umap(
 
 \item{order_values}{Whether to plot higher values in front of lower values ("sorted") or in random order ("random").}
 
-\item{point_size}{Point size passed to geom_point()}
+\item{point_size}{Point size passed to geom_point().}
 
-\item{alpha}{Alpha passed to geom_point()}
+\item{alpha}{Alpha passed to geom_point().}
 
 \item{plot_width}{Width of the coordinate system in mm. Set to NA to leave undetermined.}
 

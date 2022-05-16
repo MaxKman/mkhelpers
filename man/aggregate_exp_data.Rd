@@ -14,7 +14,8 @@ aggregate_exp_data(
   min_n_samples_aggr,
   mode = c("mean", "sum"),
   return_matrix = TRUE,
-  cell_name_col = cell_name
+  cell_name_col = cell_name,
+  expr_format = c("wide", "long")
 )
 }
 \arguments{
@@ -34,12 +35,14 @@ aggregate_exp_data(
 
 \item{mode}{Whether to aggregate using mean() ("mean") or sum() ("sum").}
 
-\item{return_matrix}{If set to TRUE returns a matrix with each aggregation groups as columns and genes as rows. If set to FALSE returns a dataframe in long format}
+\item{return_matrix}{If set to TRUE returns a matrix with each aggregation groups as columns and genes as rows. If set to FALSE returns a dataframe}
 
 \item{cell_name_col}{The name of the column that contains the cell identifier}
+
+\item{expr_format}{Return gene expression information in wide or long format (default: "wide")}
 }
 \value{
-A matrix with aggregation groups as columns and genes as rows (return_matrix = TRUE), or a dataframe containing the same information in long format (return_matrix = FALSE)
+A matrix with aggregation groups as columns and genes as rows (return_matrix = TRUE), or a dataframe containing the same information  (return_matrix = FALSE)
 }
 \description{
 This function aggregates single cell data according to a predefined group (see aggr_col), separately for each donor

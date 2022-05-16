@@ -9,7 +9,7 @@ plot_umap_grid(
   feature_list,
   quantile_limits_list = NULL,
   n_cols = 3,
-  out_width = 183,
+  out_width = 180,
   output_path,
   ...
 )

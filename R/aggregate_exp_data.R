@@ -8,10 +8,11 @@
 #' @param min_n_samples_aggr Minimum number of samples in each aggregation group. If less than min_n_samples_aggr aggregation will not be performed.
 #' @param mode Whether to aggregate using mean() ("mean") or sum() ("sum").
 #' @param n_cells_normalize The number of cells to which the pseudobulking will be standardized (only applied for mode = "sum"). E.g. if set to 10000, the counts aggregated from a cluster/sample combination will be normalized as follows: count_matrix / n_cells * n_cells_normalize.
-#' @param return_matrix If set to TRUE returns a matrix with each aggregation groups as columns and genes as rows. If set to FALSE returns a dataframe in long format
+#' @param return_matrix If set to TRUE returns a matrix with each aggregation groups as columns and genes as rows. If set to FALSE returns a dataframe
+#' @param expr_format Return gene expression information in wide or long format (default: "wide")
 #' @param cell_name_col The name of the column that contains the cell identifier
 #'
-#' @return A matrix with aggregation groups as columns and genes as rows (return_matrix = TRUE), or a dataframe containing the same information in long format (return_matrix = FALSE)
+#' @return A matrix with aggregation groups as columns and genes as rows (return_matrix = TRUE), or a dataframe containing the same information  (return_matrix = FALSE)
 #' @export
 #'
 #' @examples
@@ -55,7 +56,7 @@
 #' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 18, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE)
 #' test_results$seurat_clusters %>% unique %>% sort
 #'  }
-aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, n_cells_normalize = 0, min_n_samples_aggr, mode = c("mean", "sum"), return_matrix = TRUE, cell_name_col = cell_name) {
+aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, n_cells_normalize = 0, min_n_samples_aggr, mode = c("mean", "sum"), return_matrix = TRUE, cell_name_col = cell_name, expr_format = c("wide", "long")) {
 
   # First create a little report which samples are going to be included / excluded:
   group_stats <- md %>%
@@ -139,7 +140,9 @@ aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, 
     aggregated_exp %>% unite(group_sample, c({{aggr_col}}, {{sample_col}}), sep = "_._") %>% pivot_wider(names_from = group_sample, values_from = exp) %>% column_to_rownames("gene") %>% as.matrix()
   } else if (return_matrix & sample_col_str == "none") {
     aggregated_exp %>% pivot_wider(names_from = {{aggr_col}}, values_from = exp) %>% column_to_rownames("gene") %>% as.matrix()
-  } else {
+  } else if (expr_format[[1]] == "long") {
     aggregated_exp
+  } else {
+    aggregated_exp %>% pivot_wider(names_from = {{aggr_col}}, values_from = exp)
   }
 }
