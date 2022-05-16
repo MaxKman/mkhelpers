@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_feature_comparison.R
 \name{plot_feature_comparison}
 \alias{plot_feature_comparison}
-\title{Title}
+\title{Compare features across groups and samples with boxplots}
 \usage{
 plot_feature_comparison(
   tbl_x,
@@ -54,7 +54,7 @@ plot_feature_comparison(
 A ggplot object (when output is set to "plot")
 }
 \description{
-Title
+Compare features across groups and samples with boxplots
 }
 \examples{
 # See ?group_markers

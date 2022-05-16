@@ -1,4 +1,4 @@
-#' Title
+#' Compare a list of features across groups and samples with boxplots
 #'
 #' @param tbl_x A tibble containing feature expression values and group designations
 #' @param feature_list A list of features to be plotted from feature_col

@@ -1,4 +1,4 @@
-#' Title
+#' Compare features across groups and samples with boxplots
 #'
 #' @param tbl_x A tibble containing feature expression values and group designations
 #' @param title The plot title (e.g. the gene that is plotted)

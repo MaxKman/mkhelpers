@@ -2,7 +2,7 @@
 % Please edit documentation in R/group_markers.R
 \name{group_markers}
 \alias{group_markers}
-\title{Title Group marker gene identification}
+\title{Group marker gene identification}
 \usage{
 group_markers(
   m,
@@ -90,5 +90,4 @@ plot_umap_grid(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, 
 m_aggr_df <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean", return_matrix = FALSE, expr_format = "long")
 plot_feature_comparison_grid(tbl_x = m_aggr_df, feature_list = genes_plot, output_path = "~temp.png", expr_col = "exp", group_col = "seurat_clusters", n_cols = 5)
 }
-
 }

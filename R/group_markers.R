@@ -1,4 +1,4 @@
-#' Title Group marker gene identification
+#' Group marker gene identification
 #' @description This function tries to identify marker genes for each group defined in the provided data. Importantly, it takes the identity of biological replicates (e.g. donors) into consideration.
 #' @param m A count matrix, where rows are genes and columns are sample/group combinations. Single cell data should not be put in directly but aggregated first using aggregate_exp_data().
 #' @param auto_extract_groups_samples If the count matrix was generated using aggregate_exp_data() groups and sample identities can be automatically extracted from the column names. Set to TRUE by default.
