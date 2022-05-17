@@ -15,7 +15,8 @@ group_markers(
   max_n_markers = 0,
   marker_direction = c("positive", "negative"),
   n_workers = 4,
-  output_path
+  output_path,
+  previous_output = NULL
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ group_markers(
 \item{n_workers}{Number of cores to use when executing DEseq2}
 
 \item{output_path}{All output will be stored in this folder}
+
+\item{previous_output}{Path to a folder containing the output of a previous analysis. If this is provided only the different filtering criteria and cutoffs will be applied without re-running the differential gene expression analysis.}
 }
 \value{
 The follogwing files are created in the chosen output path:

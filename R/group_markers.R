@@ -11,6 +11,7 @@
 #' @param marker_direction Whether to return 'positive' or 'negative' markers for groups.
 #' @param n_workers Number of cores to use when executing DEseq2
 #' @param output_path All output will be stored in this folder
+#' @param previous_output Path to a folder containing the output of a previous analysis. If this is provided only the different filtering criteria and cutoffs will be applied without re-running the differential gene expression analysis.
 #'
 #' @return The follogwing files are created in the chosen output path:
 #' - deseq_dds.rds (contains the results of running DESeq2::DESeq())
@@ -58,41 +59,44 @@
 #' m_aggr_df <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean", return_matrix = FALSE, expr_format = "long")
 #' plot_feature_comparison_grid(tbl_x = m_aggr_df, feature_list = genes_plot, output_path = "~/test_plot_cluster_markers_boxplot.png", expr_col = "exp", group_col = "seurat_clusters", n_cols = 5)
 #' }
-group_markers <- function(m, auto_extract_groups_samples = TRUE, groups, samples, max_padj = 0.1, min_log2f = 1, log2f_dist = 2, max_n_markers = 0, marker_direction = c("positive", "negative"), n_workers = 4, output_path) {
+group_markers <- function(m, auto_extract_groups_samples = TRUE, groups, samples, max_padj = 0.1, min_log2f = 1, log2f_dist = 2, max_n_markers = 0, marker_direction = c("positive", "negative"), n_workers = 4, output_path, previous_output = NULL) {
 
-  if(auto_extract_groups_samples) {
-    groups_samples <- colnames(m)
-    groups <- str_remove(groups_samples, "_\\._.*")
-    samples <- str_remove(groups_samples, ".*_\\._")
+  if(is.null(previous_output)){
+    if(auto_extract_groups_samples) {
+      groups_samples <- colnames(m)
+      groups <- str_remove(groups_samples, "_\\._.*")
+      samples <- str_remove(groups_samples, ".*_\\._")
+    } else {
+      groups_samples <- str_c(groups, "_._", samples)
+    }
+    coldata <- data.frame(group = groups, sample = samples)
+    rownames(coldata) <- groups_samples
+    print("Running DESeq2")
+    dds <- DESeq2::DESeqDataSetFromMatrix(countData = m,
+                                          colData = coldata,
+                                          design = ~ group) ## see https://support.bioconductor.org/p/105087/
+    dds <- DESeq2::DESeq(dds, betaPrior = TRUE, BPPARAM = MulticoreParam(workers = n_workers))
+
+    print("Building results")
+
+    result_groups <- groups %>% unique
+    group_names <- result_groups
+    result_groups <- result_groups %>% str_c("group", .)
+    names(result_groups) <- result_groups
+
+    buildresults_distinct <- function(deseq_obj, group) {
+      results <- imap(group, function(group_x, group_x_name) {
+        print(str_c("Group ", group_x_name))
+        compare_against <- group[!(group %in% group_x)]
+        DESeq2::results(deseq_obj, contrast = list(group_x, compare_against), listValues = c(1/length(group_x), -1/length(compare_against))) %>% as.data.frame() %>% mutate(gene = rownames(.), group = group_x_name)
+      })
+      bind_rows(results)
+    }
+
+    results <- buildresults_distinct(deseq_obj = dds, group = result_groups)
   } else {
-    groups_samples <- str_c(groups, "_._", samples)
+    results <- read_csv(glue::glue("{previous_output}/raw_results.csv"))
   }
-  coldata <- data.frame(group = groups, sample = samples)
-  rownames(coldata) <- groups_samples
-  print("Running DESeq2")
-  dds <- DESeq2::DESeqDataSetFromMatrix(countData = m,
-                                        colData = coldata,
-                                        design = ~ group) ## see https://support.bioconductor.org/p/105087/
-  dds <- DESeq2::DESeq(dds, betaPrior = TRUE, BPPARAM = MulticoreParam(workers = n_workers))
-
-  print("Building results")
-
-  result_groups <- groups %>% unique
-  group_names <- result_groups
-  result_groups <- result_groups %>% str_c("group", .)
-  names(result_groups) <- result_groups
-
-  buildresults_distinct <- function(deseq_obj, group) {
-    results <- imap(group, function(group_x, group_x_name) {
-      print(str_c("Group ", group_x_name))
-      compare_against <- group[!(group %in% group_x)]
-      DESeq2::results(deseq_obj, contrast = list(group_x, compare_against), listValues = c(1/length(group_x), -1/length(compare_against))) %>% as.data.frame() %>% mutate(gene = rownames(.), group = group_x_name)
-    })
-    bind_rows(results)
-  }
-
-  results <- buildresults_distinct(deseq_obj = dds, group = result_groups)
-
   print("Selecting markers.")
 
   top_markers <- results %>%
@@ -125,14 +129,15 @@ group_markers <- function(m, auto_extract_groups_samples = TRUE, groups, samples
   top_markers_list <- top_markers %>%
     split(.$group) %>%
     map("gene")
-
-  saveRDS(dds, glue::glue("{output_path}/deseq_dds.rds"))
-  write_csv(results, glue::glue("{output_path}/raw_results.csv"))
+  if(is.null(previous_output)){
+    saveRDS(dds, glue::glue("{output_path}/deseq_dds.rds"))
+    write_csv(results, glue::glue("{output_path}/raw_results.csv"))
+  }
   write_csv(top_markers, glue::glue("{output_path}/selected_markers.csv"))
   saveRDS(top_markers_list, glue::glue("{output_path}/selected_markers_list.rds"))
 
   iwalk(top_markers_list, function(markers_x, name_x) {
     print(glue::glue("Identified {length(markers_x)} marker genes for group {name_x}"))
   })
-  print(glue("Results can be found in {output_path}"))
+  print(glue::glue("Results can be found in {output_path}"))
 }
