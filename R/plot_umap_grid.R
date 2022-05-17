@@ -33,7 +33,7 @@ plot_umap_grid <- function(tbl_x, feature_list, quantile_limits_list = NULL, n_c
   col_width <- out_width / n_cols
   out_height <- ceiling(n_plots / n_cols) * col_width * 0.8
   if(is.null(quantile_limits_list)) {
-    quantile_limits <- list(c(0.01, 0.99))
+    quantile_limits <- list(c(0.1, 0.9))
     quantile_limits_list <- rep(quantile_limits, length(feature_list))
   }
   plot_l <- map2(feature_list, quantile_limits_list, function(feature_x, quantile_limits_x) {
