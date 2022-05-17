@@ -9,7 +9,7 @@ plot_umap(
   umap_dim_col_1,
   umap_dim_col_2,
   feature_x,
-  quantile_limits = c(0.3, 0.99),
+  quantile_limits = c(0.01, 0.99),
   feature_colors = NULL,
   title,
   output = c("image", "plot"),

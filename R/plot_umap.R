@@ -42,7 +42,7 @@
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "Seurat clusters", feature_x = seurat_clusters, order_values = "random", show_legend = FALSE, show_labels = TRUE, point_size = 0.5)
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "CD3 expression", feature_x = CD3D, point_size = 0.5)
 #' }
-plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
+plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.01, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
 
   if(order_values[[1]] == "sorted") {
     tbl_x <- tbl_x %>%
@@ -62,7 +62,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   if(tbl_x %>% pull({{feature_x}}) %>% class %in% c("character", "factor")) {mode <- "discrete"}
 
   if(mode == "continuous") {
-    feature_x_cutoffs <- tbl_x %>% pull({{feature_x}}) %>% quantile(quantile_limits)
+    feature_x_cutoffs <- tbl_x %>% mutate({{feature_x}} := na_if({{feature_x}}, 0)) %>% pull({{feature_x}}) %>% quantile(quantile_limits, na.rm = TRUE) #zero values are not taken into account when determining the cutoff
     p <- p + viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
   }
 
