@@ -86,8 +86,8 @@ tbl_x <- seu_extract_tbl(seu_x = seu_pbmc,
   assay_extract = "RNA",
   slot_extract = "data",
   expr_format = "wide")
-plot_umap_grid(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~/test_plot_cluster_markers.png", feature_list = c("seurat_clusters", genes_plot), show_labels = TRUE, point_size = 0.7)
+plot_umap_grid(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~/test_plot_cluster_markers_umap.png", feature_list = c("seurat_clusters", genes_plot), show_labels = TRUE, point_size = 0.7)
 m_aggr_df <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean", return_matrix = FALSE, expr_format = "long")
-plot_feature_comparison_grid(tbl_x = m_aggr_df, feature_list = genes_plot, output_path = "~temp.png", expr_col = "exp", group_col = "seurat_clusters", n_cols = 5)
+plot_feature_comparison_grid(tbl_x = m_aggr_df, feature_list = genes_plot, output_path = "~/test_plot_cluster_markers_boxplot.png", expr_col = "exp", group_col = "seurat_clusters", n_cols = 5)
 }
 }
