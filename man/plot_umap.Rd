@@ -37,7 +37,7 @@ plot_umap(
 
 \item{feature_x}{Name of column containing feature data}
 
-\item{quantile_limits}{Quantile limits applied to continuous feature. E.g. c(0.1, 0.9) applies the dynamic range of the color scale only to to values above the 10th percentile and below the 90th percentile.}
+\item{quantile_limits}{Quantile limits applied to continuous feature. E.g. c(0.01, 0.99) applies the dynamic range of the color scale only to to values above the 1st percentile and below the 99th percentile.}
 
 \item{feature_colors}{Colors to be used for discrete features. Ideally provide as named vector, where the vector names are the feature levels and the values the colors.}
 
