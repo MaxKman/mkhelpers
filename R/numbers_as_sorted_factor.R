@@ -21,14 +21,13 @@
 
 numbers_as_sorted_factor <- function(x) {
   if (class(x) == "numeric") {
-    x <- x %>% unique %>% sort
-
+    x_levels <- x %>% unique %>% sort
   } else if (class(x) == "character") {
-    x <- x %>% unique %>% as.numeric() %>% sort
+    x_levels <- x %>% unique %>% as.numeric() %>% sort
   } else if (class(x) == "factor") {
-    x <- x %>% as.character %>% unique %>% as.numeric() %>% sort
+    x_levels <- x %>% as.character %>% unique %>% as.numeric() %>% sort
   } else {
     stop("Input is not a numeric, character or factor.")
   }
-  factor(x, levels = x)
+  factor(x, levels = x_levels)
 }
