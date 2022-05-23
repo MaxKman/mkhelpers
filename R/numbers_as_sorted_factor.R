@@ -1,0 +1,34 @@
+#' Convert a character vector, factor or integer vector to an ordered factor preserving numerical order
+#' @description A common problem when converting numbers to factors is that the numeric order is not preserved. E.g. the numbers from 1 to 10 will be ordered as "1", "10", "2", "3", "4", "5", "6", "7", "8", "9". This function returns an ordered factor that preserves numerical order.
+#' @param x An integer vector, a character vector (containing integer values as strings) or a factor (containing integer values as strings)
+#'
+#' @return An ordered factor with numerical order preserved
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' x <- factor(c("1", "2", "3", "10", "4", "10"))
+#' levels(x)
+#' numbers_as_sorted_factor(x)
+#' numbers_as_sorted_factor(x) %>% levels
+#'
+#' x <- c(1, 2, 3, 10, 4, 10)
+#' numbers_as_sorted_factor(x)
+#'
+#' x <- c("1", "2", "3", "10", "4", "10")
+#' numbers_as_sorted_factor(x)
+#' }
+
+numbers_as_sorted_factor <- function(x) {
+  if (class(x) == "numeric") {
+    x <- x %>% unique %>% sort
+
+  } else if (class(x) == "character") {
+    x <- x %>% unique %>% as.numeric() %>% sort
+  } else if (class(x) == "factor") {
+    x <- x %>% as.character %>% unique %>% as.numeric() %>% sort
+  } else {
+    stop("Input is not a numeric, character or factor.")
+  }
+  factor(x, levels = x)
+}
