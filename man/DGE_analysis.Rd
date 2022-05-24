@@ -20,8 +20,6 @@ DGE_analysis(
   min_n_samples_group,
   cell_name_col = cell_name,
   exp_percentage = 5,
-  parallel = FALSE,
-  n_workers = 4,
   save_results = FALSE,
   savepath = "../../RDS/DGE"
 )
@@ -57,10 +55,6 @@ DGE_analysis(
 
 \item{exp_percentage}{Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis}
 
-\item{parallel}{Perform analysis in parallel}
-
-\item{n_workers}{Number of workers to use when performing analysis in parallel}
-
 \item{save_results}{Whether to save results to an RDS file (default: FALSE)}
 
 \item{savepath}{Path where the results of the analysis should be saved}
@@ -69,7 +63,7 @@ DGE_analysis(
 A dataframe with the DEseq2 results with an additional column indicating the cluster
 }
 \description{
-DEseq2 wrapper for pseudobulk differential gene expression analysis in single cell data
+This function can be run in parallel by setting up a future environment. See examples.
 }
 \examples{
 \dontrun{
@@ -89,6 +83,10 @@ add_donors <- pbmc_ifnb@meta.data \%>\%
   select(simulated_donors)
 add_donors$cell_name <- rownames(add_donors)
 pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
+# run sequential:
+options(future.globals.maxSize = 20*1024^3)
+future::plan(future::sequential())
+tictoc::tic()
 test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
  md = pbmc_ifnb@meta.data,
  cluster_col = seurat_annotations,
@@ -98,10 +96,29 @@ test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
  group2 = "STIM",
  design = ~stim,
  n_cells_normalize = 10000,
- n_cells_min = 20,
+ n_cells_min = 10,
  min_n_samples_group = 3,
  cell_name_col = cell_name,
- exp_percentage = 5,
- parallel = FALSE)
+ exp_percentage = 1)
+tictoc::toc()
+# run in parallel:
+options(future.globals.maxSize = 20*1024^3)
+future::plan(future::multisession(workers = 10, gc = TRUE))
+tictoc::tic()
+test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
+ md = pbmc_ifnb@meta.data,
+ cluster_col = seurat_annotations,
+ sample_col = simulated_donors,
+ group_col = stim,
+ group1 = "CTRL",
+ group2 = "STIM",
+ design = ~stim,
+ n_cells_normalize = 10000,
+ n_cells_min = 10,
+ min_n_samples_group = 3,
+ cell_name_col = cell_name,
+ exp_percentage = 1)
+tictoc::toc()
+future:::ClusterRegistry("stop")
  }
 }

@@ -1,5 +1,5 @@
 #' DEseq2 wrapper for pseudobulk differential gene expression analysis in single cell data
-#'
+#' @description This function can be run in parallel by setting up a future environment. See examples.
 #' @param m A single cell matrix with genes as rows and cells as columns
 #' @param md A metadata dataframe (must contain cluster_col, sample_col and group_col)
 #' @param cluster_col The metadata column identifying the cluster of each cell
@@ -15,8 +15,6 @@
 #' @param min_n_samples_group Minimum number of samples in each group to perform DGE analysis. E.g. if set to 3 only 3 versus 3 comparisons will be carried out.
 #' @param cell_name_col The name of the column that contains the cell identifier
 #' @param exp_percentage Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis
-#' @param parallel Perform analysis in parallel
-#' @param n_workers Number of workers to use when performing analysis in parallel
 #' @param save_results Whether to save results to an RDS file (default: FALSE)
 #' @param savepath Path where the results of the analysis should be saved
 #'
@@ -41,6 +39,10 @@
 #'   select(simulated_donors)
 #'add_donors$cell_name <- rownames(add_donors)
 #'pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
+#'# run sequential:
+#'options(future.globals.maxSize = 20*1024^3)
+#'future::plan(future::sequential())
+#'tictoc::tic()
 #'test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
 #'  md = pbmc_ifnb@meta.data,
 #'  cluster_col = seurat_annotations,
@@ -50,23 +52,34 @@
 #'  group2 = "STIM",
 #'  design = ~stim,
 #'  n_cells_normalize = 10000,
-#'  n_cells_min = 20,
+#'  n_cells_min = 10,
 #'  min_n_samples_group = 3,
 #'  cell_name_col = cell_name,
-#'  exp_percentage = 5,
-#'  parallel = FALSE)
+#'  exp_percentage = 1)
+#'tictoc::toc()
+#'# run in parallel:
+#'options(future.globals.maxSize = 20*1024^3)
+#'future::plan(future::multisession(workers = 10, gc = TRUE))
+#'tictoc::tic()
+#'test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
+#'  md = pbmc_ifnb@meta.data,
+#'  cluster_col = seurat_annotations,
+#'  sample_col = simulated_donors,
+#'  group_col = stim,
+#'  group1 = "CTRL",
+#'  group2 = "STIM",
+#'  design = ~stim,
+#'  n_cells_normalize = 10000,
+#'  n_cells_min = 10,
+#'  min_n_samples_group = 3,
+#'  cell_name_col = cell_name,
+#'  exp_percentage = 1)
+#'tictoc::toc()
+#'future:::ClusterRegistry("stop")
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, parallel = FALSE, n_workers = 4, save_results = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, save_results = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
-
-  if(parallel) {
-    options(future.globals.maxSize = 20*1024^3)
-    future::plan(future::multisession(workers = 4, gc = TRUE))
-  } else {
-    options(future.globals.maxSize = 20*1024^3)
-    future::plan(future::sequential)
-  }
 
   md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{ add_var }}) %>% distinct() %>% ungroup %>% as.data.frame()
   rownames(md_persample) <- md_persample %>% pull({{sample_col}})
@@ -138,7 +151,6 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NU
 
   # the following is way faster than using purrr:reduce calls
   results <- results %>% do.call(rbind, .) %>% as_tibble
-  future:::ClusterRegistry("stop")
   if(save_results) {
     dir.create(savepath, recursive = TRUE)
     saveRDS(results, str_c(savepath, "/DGE_", n_cells_normalize, "_cells_", deparse(substitute(cluster_col)), "_", title, ".RDS"))
