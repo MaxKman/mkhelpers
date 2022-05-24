@@ -21,6 +21,7 @@ DGE_analysis(
   cell_name_col = cell_name,
   exp_percentage = 5,
   parallel = FALSE,
+  n_workers = 4,
   save_results = FALSE,
   savepath = "../../RDS/DGE"
 )
@@ -57,6 +58,8 @@ DGE_analysis(
 \item{exp_percentage}{Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis}
 
 \item{parallel}{Perform analysis in parallel}
+
+\item{n_workers}{Number of workers to use when performing analysis in parallel}
 
 \item{save_results}{Whether to save results to an RDS file (default: FALSE)}
 

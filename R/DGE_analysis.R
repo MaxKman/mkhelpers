@@ -16,6 +16,7 @@
 #' @param cell_name_col The name of the column that contains the cell identifier
 #' @param exp_percentage Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis
 #' @param parallel Perform analysis in parallel
+#' @param n_workers Number of workers to use when performing analysis in parallel
 #' @param save_results Whether to save results to an RDS file (default: FALSE)
 #' @param savepath Path where the results of the analysis should be saved
 #'
@@ -55,13 +56,13 @@
 #'  exp_percentage = 5,
 #'  parallel = FALSE)
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, parallel = FALSE, save_results = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, parallel = FALSE, n_workers = 4, save_results = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
   if(parallel) {
     options(future.globals.maxSize = 20*1024^3)
-    future::plan(multisession(workers = 4, gc = TRUE))
+    future::plan(future::multisession(workers = 4, gc = TRUE))
   } else {
     options(future.globals.maxSize = 20*1024^3)
     future::plan(future::sequential)
@@ -90,9 +91,13 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NU
   }
   cells_cluster_sample <- cells_cluster_sample[!is.na(cells_cluster_sample)]
 
+  cells_cluster_sample_expr <- map(cells_cluster_sample, function(x) {
+    map(x, ~m[,.])
+  })
+
   tictoc::tic()
-  results <- suppressMessages(future.apply::future_lapply(X = cells_cluster_sample, FUN = function(x) {
-    x <- map(x, function(x) {m[,x]})
+  results <- suppressMessages(furrr::future_map(cells_cluster_sample_expr, function(x) {
+    x <- map(x, as.matrix) # somehow the parallel execution needs this to work
     # Subset on genes, which are at least expressed in x% of cells of each sample within a group
     sample_genes <- map(x, ~rownames(.[Matrix::rowSums(. > 0) >= ncol(.)*exp_percentage/100,]))
 
