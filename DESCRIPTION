@@ -21,7 +21,8 @@ Imports:
     stringr,
     tictoc,
     future,
-    furrr
+    furrr,
+    AUCell
 RoxygenNote: 7.1.2
 Suggests: 
     testthat (>= 3.0.0)
