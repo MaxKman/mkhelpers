@@ -6,7 +6,7 @@
 \usage{
 seu_extract_tbl(
   seu_x,
-  reduction,
+  reduction = NULL,
   metadata_cols = "all",
   extract_expr = FALSE,
   genes_extract = "all",
