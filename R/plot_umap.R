@@ -67,7 +67,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   if(mode == "continuous") {
     feature_x_cutoffs <- tbl_x %>% mutate({{feature_x}} := na_if({{feature_x}}, 0)) %>% pull({{feature_x}}) %>% quantile(quantile_limits, na.rm = TRUE) #zero values are not taken into account when determining the cutoff
     p <- p +
-      guides(color = guide_colourbar(barwidth = 10, barheight = 0.3, title.position = "top", title.hjust = 0.5)) +
+      guides(color = guide_colourbar(barwidth = unit(0.9*plot_width, "mm"), barheight = unit(0.025*plot_width, "mm"), title.position = "top", title.hjust = 0.5)) +
       viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
   }
 
