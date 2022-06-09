@@ -12,6 +12,7 @@ plot_umap_grid(
   out_width = 180,
   output_path,
   show_labels = FALSE,
+  show_legend = TRUE,
   ...
 )
 }
@@ -29,6 +30,8 @@ plot_umap_grid(
 \item{output_path}{Output path and file name (should end in .png)}
 
 \item{show_labels}{Whether to label the mean coordinates of discrete feature values. Set to TRUE or FALSE to affect all plots or give a list of booleans for all features}
+
+\item{show_legend}{Whether to show the ggplot legend. Set to TRUE or FALSE to affect all plots or give a list of booleans for all features.}
 
 \item{...}{Other parameters passed on to plot_umap. Note, that umap_dim_col_1 and umap_dim_col_2 need to be provided.}
 }
