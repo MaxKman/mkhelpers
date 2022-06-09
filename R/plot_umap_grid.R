@@ -38,16 +38,16 @@ plot_umap_grid <- function(tbl_x, feature_list, quantile_limits_list = NULL, n_c
     quantile_limits <- list(c(0.3, 0.99))
     quantile_limits_list <- rep(quantile_limits, length(feature_list))
   }
-  if(length(show_labels) == 1 & show_labels) {
+  if(length(show_labels) == 1 & show_labels[[1]]) {
     show_labels_list <- rep(TRUE, length(feature_list))
-  } else if(length(show_labels) == 1 & !show_labels) {
+  } else if(length(show_labels) == 1 & !show_labels[[1]]) {
     show_labels_list <- rep(FALSE, length(feature_list))
   } else {
     show_labels_list <- show_labels
   }
-  if(length(show_legend) == 1 & show_legend) {
+  if(length(show_legend) == 1 & show_legend[[1]]) {
     show_legend_list <- rep(TRUE, length(feature_list))
-  } else if(length(show_labels) == 1 & !show_legend) {
+  } else if(length(show_labels) == 1 & !show_legend[[1]]) {
     show_legend_list <- rep(FALSE, length(feature_list))
   } else {
     show_legend_list <- show_legend
