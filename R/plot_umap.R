@@ -11,6 +11,7 @@
 #' @param output_path Output path
 #' @param dpi Resolution (dpi) for saved png.
 #' @param order_values Whether to plot higher values in front of lower values ("sorted") or in random order ("random").
+#' @param invert_sort_direction Wheter to invert sort direction (plot lower values in front)
 #' @param point_size Point size passed to geom_point().
 #' @param alpha Alpha passed to geom_point().
 #' @param plot_width Width of the coordinate system in mm. Set to NA to leave undetermined.
@@ -42,11 +43,14 @@
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "Seurat clusters", feature_x = seurat_clusters, order_values = "random", show_legend = FALSE, show_labels = TRUE, point_size = 0.5)
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "CD3 expression", feature_x = CD3D, point_size = 0.5)
 #' }
-plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
+plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), invert_sort_direction = FALSE, point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
 
-  if(order_values[[1]] == "sorted") {
+  if(order_values[[1]] == "sorted" & !invert_sort_direction) {
     tbl_x <- tbl_x %>%
       arrange({{feature_x}})
+  } else if(order_values[[1]] == "sorted" & invert_sort_direction) {
+    tbl_x <- tbl_x %>%
+      arrange(-{{feature_x}})
   } else if(order_values[[1]] == "random") {
     tbl_x <- tbl_x %>%
       slice_sample(n = nrow(tbl_x), replace = FALSE)

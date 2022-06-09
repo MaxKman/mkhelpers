@@ -16,6 +16,7 @@ plot_umap(
   output_path,
   dpi = 300,
   order_values = c("sorted", "random"),
+  invert_sort_direction = FALSE,
   point_size = 0.3,
   point_size_legend = 1.5,
   alpha = 1,
@@ -50,6 +51,8 @@ plot_umap(
 \item{dpi}{Resolution (dpi) for saved png.}
 
 \item{order_values}{Whether to plot higher values in front of lower values ("sorted") or in random order ("random").}
+
+\item{invert_sort_direction}{Wheter to invert sort direction (plot lower values in front)}
 
 \item{point_size}{Point size passed to geom_point().}
 
