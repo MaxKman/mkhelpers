@@ -19,6 +19,7 @@
 #' @param out_width Width in mm of the png output.
 #' @param out_height Height in mm of the png output.
 #' @param show_legend Whether to show the ggplot legend.
+#' @param legend_position Passed to theme(legend.position = ) in ggplot.
 #' @param show_labels Whether to label the mean coordinates of discrete feature values.
 #' @param label_size Size of labels.
 #'
@@ -43,7 +44,7 @@
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "Seurat clusters", feature_x = seurat_clusters, order_values = "random", show_legend = FALSE, show_labels = TRUE, point_size = 0.5)
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "CD3 expression", feature_x = CD3D, point_size = 0.5)
 #' }
-plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), invert_sort_direction = FALSE, point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, label_size = 2) {
+plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), invert_sort_direction = FALSE, point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, legend_position = c("bottom", "top", "right", "left"), show_labels = FALSE, label_size = 2) {
 
   if(order_values[[1]] == "sorted" & !invert_sort_direction) {
     tbl_x <- tbl_x %>%
@@ -85,7 +86,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   }
 
   if(!show_legend) {
-    p <- p + theme(legend.position = "none")
+    p <- p + theme(legend.position = legend_position)
   }
 
   if(!is.na(plot_width) & !is.na(plot_height)) {
