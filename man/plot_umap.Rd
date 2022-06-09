@@ -25,7 +25,6 @@ plot_umap(
   out_width = 89,
   out_height = 89,
   show_legend = TRUE,
-  legend_position = c("bottom", "top", "right", "left"),
   show_labels = FALSE,
   label_size = 2
 )
@@ -68,8 +67,6 @@ plot_umap(
 \item{out_height}{Height in mm of the png output.}
 
 \item{show_legend}{Whether to show the ggplot legend.}
-
-\item{legend_position}{Passed to theme(legend.position = ) in ggplot.}
 
 \item{show_labels}{Whether to label the mean coordinates of discrete feature values.}
 
