@@ -50,7 +50,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
       arrange({{feature_x}})
   } else if(order_values[[1]] == "sorted" & invert_sort_direction) {
     tbl_x <- tbl_x %>%
-      arrange(-{{feature_x}})
+      arrange(desc({{feature_x}}))
   } else if(order_values[[1]] == "random") {
     tbl_x <- tbl_x %>%
       slice_sample(n = nrow(tbl_x), replace = FALSE)
