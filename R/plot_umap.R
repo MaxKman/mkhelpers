@@ -11,7 +11,7 @@
 #' @param output_path Output path
 #' @param dpi Resolution (dpi) for saved png.
 #' @param order_values Whether to plot higher values in front of lower values ("sorted") or in random order ("random").
-#' @param invert_sort_direction Wheter to invert sort direction (plot lower values in front)
+#' @param invert_sort_direction Whether to invert sort direction (plot lower values in front)
 #' @param point_size Point size passed to geom_point().
 #' @param alpha Alpha passed to geom_point().
 #' @param plot_width Width of the coordinate system in mm. Set to NA to leave undetermined.

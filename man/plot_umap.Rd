@@ -52,7 +52,7 @@ plot_umap(
 
 \item{order_values}{Whether to plot higher values in front of lower values ("sorted") or in random order ("random").}
 
-\item{invert_sort_direction}{Wheter to invert sort direction (plot lower values in front)}
+\item{invert_sort_direction}{Whether to invert sort direction (plot lower values in front)}
 
 \item{point_size}{Point size passed to geom_point().}
 

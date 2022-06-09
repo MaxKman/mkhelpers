@@ -7,12 +7,14 @@
 plot_umap_grid(
   tbl_x,
   feature_list,
-  quantile_limits_list = NULL,
+  quantile_limits = list(c(0.3, 0.99)),
   n_cols = 3,
   out_width = 180,
   output_path,
   show_labels = FALSE,
   show_legend = TRUE,
+  order_values = list(c("sorted", "random")),
+  invert_sort_direction = FALSE,
   ...
 )
 }
@@ -21,7 +23,7 @@ plot_umap_grid(
 
 \item{feature_list}{List of feature columns to be plotted}
 
-\item{quantile_limits_list}{List of quantile limits for each plot (e.g. list(c(0.1,0.9), c(0.3,0.99))). Will only be applied to features with continuous scale}
+\item{quantile_limits}{Quantile limits applied to continuous feature. E.g. c(0.1, 0.9) applies the dynamic range of the color scale only to to values above the 10th percentile and below the 90th percentile. Set to a one item list, e.g. list(c(0.1, 0.9)) to affect all plots or a provide separate settings for each feature as a list.}
 
 \item{n_cols}{Number of columns to plot}
 
@@ -32,6 +34,10 @@ plot_umap_grid(
 \item{show_labels}{Whether to label the mean coordinates of discrete feature values. Set to TRUE or FALSE to affect all plots or give a list of booleans for all features}
 
 \item{show_legend}{Whether to show the ggplot legend. Set to TRUE or FALSE to affect all plots or give a list of booleans for all features.}
+
+\item{order_values}{Whether to plot higher values in front of lower values ("sorted") or in random order ("random"). Provide a list to set individually for each plot.}
+
+\item{invert_sort_direction}{Whether to invert sort direction (plot lower values in front). Provide a list to set individually for each plot.}
 
 \item{...}{Other parameters passed on to plot_umap. Note, that umap_dim_col_1 and umap_dim_col_2 need to be provided.}
 }
