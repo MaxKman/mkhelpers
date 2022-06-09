@@ -2,6 +2,7 @@
 
 export("%>%")
 export(DGE_analysis)
+export(add_group_id_columns)
 export(aggregate_exp_data)
 export(apply_quantile_cutoffs)
 export(copy_column_to_rownames)
