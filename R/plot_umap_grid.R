@@ -39,9 +39,10 @@ plot_umap_grid <- function(tbl_x, feature_list, quantile_limits_list = NULL, n_c
   }
   if(length(show_labels) == 1 & show_labels) {
     show_labels_list <- rep(TRUE, length(feature_list))
-  }
-  if(length(show_labels) == 1 & show_labels == FALSE) {
+  } else if(length(show_labels) == 1 & !show_labels) {
     show_labels_list <- rep(FALSE, length(feature_list))
+  } else {
+    show_labels_list <- show_labels
   }
 
   plot_l <- pmap(list(feature_list, quantile_limits_list, show_labels_list), function(feature_x, quantile_limits_x, show_labels_x) {
