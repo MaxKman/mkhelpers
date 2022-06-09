@@ -60,6 +60,10 @@
 #'  }
 aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, n_cells_normalize = 0, min_n_samples_aggr, mode = c("mean", "sum"), return_matrix = TRUE, cell_name_col = cell_name, expr_format = c("wide", "long"), subset = "none", subset_col) {
 
+  if(is.null(dim(m))) {
+    stop("The dimensions of the input matrix are undefined. Have you tried to subset a matrix on a single row or column? Try adding drop = FALSE to your subsetting call, e.g. m[1, , drop = FALSE]")
+  }
+
   #Subset data
   if(subset != "none") {
     md <- md %>% filter({{subset_col}} %in% subset)
