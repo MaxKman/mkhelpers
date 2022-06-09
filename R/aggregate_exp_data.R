@@ -103,7 +103,7 @@ aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, 
       if(nrow(samples_cells) >= min_n_samples_aggr) {
         m_aggr_group <- map2(samples_cells %>% pull({{sample_col}}), samples_cells %>% pull({{cell_name_col}}), function(sample_x, cells_sample_x) {
           print(glue::glue("... aggregating {group_x}, {sample_x} ..."))
-          m <- m[,cells_sample_x]
+          m <- m[, cells_sample_x, drop=FALSE]
           if(mode[1] == "mean") {
             m_aggr <- Matrix::rowMeans(m)
           } else {
@@ -123,7 +123,7 @@ aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, 
     } else {
       group_cells <- md %>% filter({{aggr_col}} == group_x) %>% pull({{cell_name_col}})
       if(length(group_cells) > n_cells_min) {
-        m <- m[,group_cells]
+        m <- m[, group_cells, drop=FALSE]
         if(mode[1] == "mean") {
           m_aggr <- Matrix::rowMeans(m)
         } else {
