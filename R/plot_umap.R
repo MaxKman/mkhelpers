@@ -59,20 +59,22 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   p <- ggplot2::ggplot(tbl_x, aes({{umap_dim_col_1}}, {{umap_dim_col_2}}, color = {{feature_x}})) +
     mkhelpers::theme_mk +
     labs(x = "UMAP 1", y = "UMAP 2", title = title) +
-    geom_point(stroke = 0, size = point_size, alpha = alpha) +
-    guides(color = guide_legend(override.aes = list(size = point_size_legend)))
+    geom_point(stroke = 0, size = point_size, alpha = alpha)
 
   if(tbl_x %>% pull({{feature_x}}) %>% class == "numeric") {mode <- "continuous"}
   if(tbl_x %>% pull({{feature_x}}) %>% class %in% c("character", "factor")) {mode <- "discrete"}
 
   if(mode == "continuous") {
     feature_x_cutoffs <- tbl_x %>% mutate({{feature_x}} := na_if({{feature_x}}, 0)) %>% pull({{feature_x}}) %>% quantile(quantile_limits, na.rm = TRUE) #zero values are not taken into account when determining the cutoff
-    p <- p + viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
+    p <- p +
+      viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
   }
 
   if(mode == "discrete") {
+    p <- p + guides(color = guide_legend(override.aes = list(size = point_size_legend))) # This fixes legend key size
     if(!is.null(feature_colors)) {
-      p <- p + scale_color_manual(values = feature_colors)
+      p <- p +
+        scale_color_manual(values = feature_colors)
     }
     if(show_labels) {
       label_df <- tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}, {{feature_x}}) %>%
