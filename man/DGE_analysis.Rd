@@ -10,11 +10,13 @@ DGE_analysis(
   cluster_col,
   sample_col,
   group_col,
+  batch_col = NULL,
+  balance_batches = FALSE,
   add_var = NULL,
   title,
   group1,
   group2,
-  design = ~batch_pair + group,
+  design = ~group,
   n_cells_normalize,
   n_cells_min,
   min_n_samples_group,
@@ -35,7 +37,11 @@ DGE_analysis(
 
 \item{group_col}{The metadata column identifying the group / condition to which each cell belongs (e.g. treatment vs. control)}
 
-\item{add_var}{An additional column that should be preserved, for example because it is used in the design formula (e.g. batch)}
+\item{batch_col}{The metadata column identifying the batch to which each cell belongs. Note, that to correct for a batch effect in the analysis the design formula needs to be adapted accordingly}
+
+\item{balance_batches}{If set to TRUE, will ensure that only samples are included in the comparison for which a corresponding sample from the same batch is available in the other group. Requires batch_col to be defined.}
+
+\item{add_var}{An additional column that should be preserved, for example because it is used in the design formula}
 
 \item{title}{The title of comparison (will be used for file naming)}
 
@@ -72,52 +78,64 @@ library(SeuratData)
 InstallData("ifnb")
 pbmc_ifnb <- LoadData("ifnb")
 
-# Simulate some donors
+# Simulate some batches and donors
 add_donors <- pbmc_ifnb@meta.data \%>\%
   rownames_to_column("cell_name") \%>\%
   group_by(stim) \%>\%
-  mutate(simulated_donors = sample(3, n(), replace = TRUE)) \%>\%
+  mutate(simulated_batches = sample(4, n(), replace = TRUE)) \%>\%
   ungroup \%>\%
+  mutate(simulated_donors = simulated_batches) \%>\%
   mutate(simulated_donors = str_c(simulated_donors, "_", stim)) \%>\%
   column_to_rownames("cell_name") \%>\%
-  select(simulated_donors)
+  select(simulated_donors, simulated_batches)
 add_donors$cell_name <- rownames(add_donors)
 pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
+
+# Remove a donor from one batch to test whether the entire batch is
+# correctly removed from the analysis (if balance_batches is set to true)
+donor_remove <- pbmc_ifnb@meta.data$simulated_donors \%>\% unique \%>\% .[[1]]
+pbmc_ifnb <- subset(pbmc_ifnb, simulated_donors != donor_remove)
+
 # run sequential:
 options(future.globals.maxSize = 20*1024^3)
 future::plan(future::sequential())
 tictoc::tic()
 test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
- md = pbmc_ifnb@meta.data,
- cluster_col = seurat_annotations,
- sample_col = simulated_donors,
- group_col = stim,
- group1 = "CTRL",
- group2 = "STIM",
- design = ~stim,
- n_cells_normalize = 10000,
- n_cells_min = 10,
- min_n_samples_group = 3,
- cell_name_col = cell_name,
- exp_percentage = 1)
+                         md = pbmc_ifnb@meta.data,
+                         cluster_col = seurat_annotations,
+                         sample_col = simulated_donors,
+                         group_col = stim,
+                         group1 = "CTRL",
+                         group2 = "STIM",
+                         design = ~simulated_batches + stim,
+                         balance_batches = TRUE,
+                         batch_col = simulated_batches,
+                         n_cells_normalize = 10000,
+                         n_cells_min = 10,
+                         min_n_samples_group = 3,
+                         cell_name_col = cell_name,
+                         exp_percentage = 1)
 tictoc::toc()
+
 # run in parallel:
 options(future.globals.maxSize = 20*1024^3)
 future::plan(future::multisession(workers = 10, gc = TRUE))
 tictoc::tic()
 test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
- md = pbmc_ifnb@meta.data,
- cluster_col = seurat_annotations,
- sample_col = simulated_donors,
- group_col = stim,
- group1 = "CTRL",
- group2 = "STIM",
- design = ~stim,
- n_cells_normalize = 10000,
- n_cells_min = 10,
- min_n_samples_group = 3,
- cell_name_col = cell_name,
- exp_percentage = 1)
+                         md = pbmc_ifnb@meta.data,
+                         cluster_col = seurat_annotations,
+                         sample_col = simulated_donors,
+                         group_col = stim,
+                         group1 = "CTRL",
+                         group2 = "STIM",
+                         design = ~simulated_batches + stim,
+                         balance_batches = TRUE,
+                         batch_col = simulated_batches,
+                         n_cells_normalize = 10000,
+                         n_cells_min = 10,
+                         min_n_samples_group = 3,
+                         cell_name_col = cell_name,
+                         exp_percentage = 1)
 tictoc::toc()
 future:::ClusterRegistry("stop")
  }

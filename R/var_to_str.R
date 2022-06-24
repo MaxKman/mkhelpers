@@ -4,8 +4,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 var_to_str <- function(var_x) {
   deparse(substitute(var_x))
 }

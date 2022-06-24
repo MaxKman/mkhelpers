@@ -10,8 +10,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plot_feature_comparison_grid <- function(tbl_x, feature_list, feature_col = "gene", n_cols = 3, out_width = 180, output_path, ...) {
   n_plots <- length(feature_list)
   col_width <- out_width / n_cols

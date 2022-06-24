@@ -5,7 +5,9 @@
 #' @param cluster_col The metadata column identifying the cluster of each cell
 #' @param sample_col The metadata column identifying the sample to which each cell belongs (e.g. the donor)
 #' @param group_col The metadata column identifying the group / condition to which each cell belongs (e.g. treatment vs. control)
-#' @param add_var An additional column that should be preserved, for example because it is used in the design formula (e.g. batch)
+#' @param batch_col The metadata column identifying the batch to which each cell belongs. Note, that to correct for a batch effect in the analysis the design formula needs to be adapted accordingly
+#' @param balance_batches If set to TRUE, will ensure that only samples are included in the comparison for which a corresponding sample from the same batch is available in the other group. Requires batch_col to be defined.
+#' @param add_var An additional column that should be preserved, for example because it is used in the design formula
 #' @param title The title of comparison (will be used for file naming)
 #' @param group1 The name of group 1 in group_col
 #' @param group2 The name of group 2 in group_col
@@ -28,60 +30,72 @@
 #' InstallData("ifnb")
 #' pbmc_ifnb <- LoadData("ifnb")
 #'
-#' # Simulate some donors
+#' # Simulate some batches and donors
 #' add_donors <- pbmc_ifnb@meta.data %>%
 #'   rownames_to_column("cell_name") %>%
 #'   group_by(stim) %>%
-#'   mutate(simulated_donors = sample(3, n(), replace = TRUE)) %>%
+#'   mutate(simulated_batches = sample(4, n(), replace = TRUE)) %>%
 #'   ungroup %>%
+#'   mutate(simulated_donors = simulated_batches) %>%
 #'   mutate(simulated_donors = str_c(simulated_donors, "_", stim)) %>%
 #'   column_to_rownames("cell_name") %>%
-#'   select(simulated_donors)
-#'add_donors$cell_name <- rownames(add_donors)
-#'pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
-#'# run sequential:
-#'options(future.globals.maxSize = 20*1024^3)
-#'future::plan(future::sequential())
-#'tictoc::tic()
-#'test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
-#'  md = pbmc_ifnb@meta.data,
-#'  cluster_col = seurat_annotations,
-#'  sample_col = simulated_donors,
-#'  group_col = stim,
-#'  group1 = "CTRL",
-#'  group2 = "STIM",
-#'  design = ~stim,
-#'  n_cells_normalize = 10000,
-#'  n_cells_min = 10,
-#'  min_n_samples_group = 3,
-#'  cell_name_col = cell_name,
-#'  exp_percentage = 1)
-#'tictoc::toc()
-#'# run in parallel:
-#'options(future.globals.maxSize = 20*1024^3)
-#'future::plan(future::multisession(workers = 10, gc = TRUE))
-#'tictoc::tic()
-#'test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
-#'  md = pbmc_ifnb@meta.data,
-#'  cluster_col = seurat_annotations,
-#'  sample_col = simulated_donors,
-#'  group_col = stim,
-#'  group1 = "CTRL",
-#'  group2 = "STIM",
-#'  design = ~stim,
-#'  n_cells_normalize = 10000,
-#'  n_cells_min = 10,
-#'  min_n_samples_group = 3,
-#'  cell_name_col = cell_name,
-#'  exp_percentage = 1)
-#'tictoc::toc()
-#'future:::ClusterRegistry("stop")
+#'   select(simulated_donors, simulated_batches)
+#' add_donors$cell_name <- rownames(add_donors)
+#' pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
+#'
+#' # Remove a donor from one batch to test whether the entire batch is
+#' # correctly removed from the analysis (if balance_batches is set to true)
+#' donor_remove <- pbmc_ifnb@meta.data$simulated_donors %>% unique %>% .[[1]]
+#' pbmc_ifnb <- subset(pbmc_ifnb, simulated_donors != donor_remove)
+#'
+#' # run sequential:
+#' options(future.globals.maxSize = 20*1024^3)
+#' future::plan(future::sequential())
+#' tictoc::tic()
+#' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
+#'                          md = pbmc_ifnb@meta.data,
+#'                          cluster_col = seurat_annotations,
+#'                          sample_col = simulated_donors,
+#'                          group_col = stim,
+#'                          group1 = "CTRL",
+#'                          group2 = "STIM",
+#'                          design = ~simulated_batches + stim,
+#'                          balance_batches = TRUE,
+#'                          batch_col = simulated_batches,
+#'                          n_cells_normalize = 10000,
+#'                          n_cells_min = 10,
+#'                          min_n_samples_group = 3,
+#'                          cell_name_col = cell_name,
+#'                          exp_percentage = 1)
+#' tictoc::toc()
+#'
+#' # run in parallel:
+#' options(future.globals.maxSize = 20*1024^3)
+#' future::plan(future::multisession(workers = 10, gc = TRUE))
+#' tictoc::tic()
+#' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
+#'                          md = pbmc_ifnb@meta.data,
+#'                          cluster_col = seurat_annotations,
+#'                          sample_col = simulated_donors,
+#'                          group_col = stim,
+#'                          group1 = "CTRL",
+#'                          group2 = "STIM",
+#'                          design = ~simulated_batches + stim,
+#'                          balance_batches = TRUE,
+#'                          batch_col = simulated_batches,
+#'                          n_cells_normalize = 10000,
+#'                          n_cells_min = 10,
+#'                          min_n_samples_group = 3,
+#'                          cell_name_col = cell_name,
+#'                          exp_percentage = 1)
+#' tictoc::toc()
+#' future:::ClusterRegistry("stop")
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NULL, title, group1, group2, design = ~batch_pair + group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, save_results = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, save_results = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
-  md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{ add_var }}) %>% distinct() %>% ungroup %>% as.data.frame()
+  md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{add_var}}, {{batch_col}}) %>% distinct() %>% ungroup %>% as.data.frame()
   rownames(md_persample) <- md_persample %>% pull({{sample_col}})
 
   samples_g1 <- md %>% filter({{group_col}} == group1) %>% pull({{sample_col}}) %>% unique
@@ -90,17 +104,51 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, add_var = NU
   md <- md %>% group_by({{cluster_col}})
   cells_cluster_sample <- md %>% group_split() %>% map(function(x) x %>% split(.[,sample_col_str])) %>% map_depth(~pull(., {{cell_name_col}}), .depth = 2)
   names(cells_cluster_sample) <- group_keys(md) %>% pull %>% as.character()
+  md <- md %>% ungroup
 
-  #Remove samples seperately for each cluster with less than n_cells_min
+  # Remove samples separately for each cluster with less than n_cells_min
   cells_cluster_sample <- map(cells_cluster_sample, function(x) {
     x[x %>% map(length) > n_cells_min]
   })
+
+  # ensure that only samples are included in the comparison for which a corresponding sample from the same batch is available in the other group. Requires batch_col to be defined.
+  if(balance_batches) {
+    for (k in seq_along(cells_cluster_sample)) {
+      batch_info <- md %>%
+        filter({{cluster_col}} == names(cells_cluster_sample)[[k]]) %>%
+        select({{sample_col}}, {{group_col}}, {{batch_col}}) %>%
+        distinct %>%
+        filter({{sample_col}} %in% names(cells_cluster_sample[[k]]))
+      suppressMessages(
+        batches_both_groups <- batch_info %>%
+          group_by({{group_col}}, {{batch_col}}) %>%
+          summarise(n_batch = n()) %>%
+          pivot_wider(names_from = {{group_col}}, values_from = n_batch) %>%
+          drop_na %>%
+          left_join(batch_info)
+      )
+      donors_keep <- batches_both_groups %>% pull({{sample_col}})
+      if(nrow(batches_both_groups) >= 1) {
+        cells_cluster_sample[[k]] <- cells_cluster_sample[[k]][donors_keep]
+      } else {
+        cells_cluster_sample[[k]] <- NA
+      }
+    }
+  }
 
   # Remove clusters, for which less than min_n_samples_group samples remain in a group
   for (k in seq_along(cells_cluster_sample)) {
     n_g1 <- names(cells_cluster_sample[[k]]) %in% samples_g1 %>% sum
     n_g2<- names(cells_cluster_sample[[k]]) %in% samples_g2 %>% sum
     if(n_g1 < min_n_samples_group || n_g2 < min_n_samples_group) {cells_cluster_sample[[k]] <- NA}
+  }
+  # Print message to note which samples are kept
+  for (k in seq_along(cells_cluster_sample)) {
+    if(!is.na(cells_cluster_sample[[k]][[1]][[1]])) {
+      print(glue::glue("Cluster {names(cells_cluster_sample)[[k]]}:\n{names(cells_cluster_sample[[k]]) %>% str_c(collapse = ', ')}\nare kept, which share batches across groups!\n\n"))
+    } else {
+      print(glue::glue("Cluster {names(cells_cluster_sample)[[k]]}: too few samples, removed from analysis!\n\n"))
+    }
   }
   cells_cluster_sample <- cells_cluster_sample[!is.na(cells_cluster_sample)]
 
