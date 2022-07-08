@@ -4,12 +4,14 @@
 \alias{filter_genes}
 \title{Title Filter on genes expressed in more than n samples (e.g. cells)}
 \usage{
-filter_genes(m, min_perc_exp)
+filter_genes(m, min_perc_exp, include_genes = "none")
 }
 \arguments{
 \item{m}{A count matrix (can be a sparse matrix)}
 
 \item{min_perc_exp}{The minimum percentage of samples expressing a given gene for it to be included in the output}
+
+\item{include_genes}{A character vector of genes to include, even if their expression is lower than min_perc_exp}
 }
 \value{
 A filtered count matrix
