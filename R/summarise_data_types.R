@@ -2,7 +2,7 @@
 #'
 #' @param tbl_x A tibble
 #'
-#' @return A tibble containing the data types of all columns of the input tibble as well as three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
+#' @return A tibble containing the data types of all columns of the input tibble, the number of non-na values, three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
 #' @export
 #'
 #' @examples
@@ -23,10 +23,12 @@ summarise_data_types <- function(tbl_x) {
     }
     return(NA)
   })
-  tibble(var_names = colnames(tbl_x),
-         var_types = tbl_x %>% map(class) %>% unlist,
+  tibble(vars = colnames(tbl_x),
+         types = tbl_x %>% map(class) %>% unlist,
          case_1 = case_1,
          case_2 = case_2,
          case_3 = case_3,
-         non_na_examples = non_na_examples)
+         non_na_examples = non_na_examples) %>%
+    left_join(perc_non_na(tbl_x)) %>%
+    relocate(perc_non_na, .after = types)
 }

@@ -10,8 +10,11 @@ summarise_data_types(tbl_x)
 \item{tbl_x}{A tibble}
 }
 \value{
-A tibble containing the data types of all columns of the input tibble as well as three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
+A tibble containing the data types of all columns of the input tibble, the number of non-na values, three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
 }
 \description{
 Summarise the column data types of a tibble
+}
+\examples{
+summarise_data_types(mtcars)
 }
