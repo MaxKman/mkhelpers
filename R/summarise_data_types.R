@@ -2,12 +2,21 @@
 #'
 #' @param tbl_x A tibble
 #'
-#' @return A tibble containing the data types of all columns of the input tibble, the number of non-na values, three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
+#' @return A tibble containing the data types of all columns of the input tibble, the number of non-na values, the number of unique values, the top three values, three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
 #' @export
 #'
 #' @examples
 #' summarise_data_types(mtcars)
 summarise_data_types <- function(tbl_x) {
+  n_unique_values <- tbl_x %>% map(~unique(.) %>% length)
+  top_3_values <- colnames(tbl_x) %>%
+    map(~count_(tbl_x,.) %>%
+          slice_max(order_by = n, n = 3, with_ties = FALSE) %>%
+          pull(1) %>%
+          as.character %>%
+          str_replace_na %>%
+          str_c(collapse = ", ")) %>%
+    unlist
   # The as.character conversion needs to be done for each column separately
   # otherwise errors are easily introduced, e.g. for dates
   draw_case <- function() {
@@ -25,6 +34,8 @@ summarise_data_types <- function(tbl_x) {
   })
   tibble(vars = colnames(tbl_x),
          types = tbl_x %>% map(class) %>% unlist,
+         n_unique_values = n_unique_values,
+         top_3_values = top_3_values,
          case_1 = case_1,
          case_2 = case_2,
          case_3 = case_3,
