@@ -8,8 +8,13 @@
 #' @examples
 #' summarise_tbl(mtcars)
 summarise_tbl <- function(tbl_x) {
+  list_cols <- tbl_x %>% select(where(is.list)) %>% colnames()
+  tbl_x <- tbl_x %>% select(-all_of(list_cols))
+  if(length(list_cols > 0)) {
+    print(glue("The following columns are list columns and are not included in the summary: {list_cols %>% str_c(collapse = ', ')}"))
+  }
   n_unique_values <- tbl_x %>% map(~unique(.) %>% length) %>% unlist
-  top_3_values <- colnames(tbl_x) %>%
+  top_10_values <- colnames(tbl_x) %>%
     map(~count_(tbl_x,.) %>%
           slice_max(order_by = n, n = 10, with_ties = FALSE) %>%
           pull(1) %>%
@@ -35,7 +40,7 @@ summarise_tbl <- function(tbl_x) {
   tibble(vars = colnames(tbl_x),
          types = tbl_x %>% map(class) %>% unlist,
          n_unique_values = n_unique_values,
-         top_3_values = top_3_values,
+         top_10_values = top_10_values,
          case_1 = case_1,
          case_2 = case_2,
          case_3 = case_3,
