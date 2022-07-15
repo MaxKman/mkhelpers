@@ -10,11 +10,11 @@ summarise_tbl(tbl_x)
 \item{tbl_x}{A tibble}
 }
 \value{
-A tibble containing the data types of all columns of the input tibble, the number of non-na values, the number of unique values, the top three values, three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
+A tibble containing the data types of all columns of the input tibble, the number of non-na values, the number of unique values, the top ten values, three randomly drawn examples (cases 1-3, corresponding to entire rows of the original tibble) and one randomly drawn non-na value for each column.
 }
 \description{
 Summarise the variables of a tibble
 }
 \examples{
-summarise_data_types(mtcars)
+summarise_tbl(mtcars)
 }
