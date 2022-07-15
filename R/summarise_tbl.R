@@ -38,7 +38,7 @@ summarise_tbl <- function(tbl_x) {
     return(NA)
   })
   tibble(vars = colnames(tbl_x),
-         types = tbl_x %>% map(class) %>% unlist,
+         types = tbl_x %>% map(~class(.) %>% str_c(collapse = ", ")) %>% unlist,
          n_unique_values = n_unique_values,
          top_10_values = top_10_values,
          case_1 = case_1,
