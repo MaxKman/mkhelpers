@@ -1,4 +1,4 @@
-#' Summarise the column data types of a tibble
+#' Summarise the variables of a tibble
 #'
 #' @param tbl_x A tibble
 #'
@@ -7,7 +7,7 @@
 #'
 #' @examples
 #' summarise_data_types(mtcars)
-summarise_data_types <- function(tbl_x) {
+summarise_tbl <- function(tbl_x) {
   n_unique_values <- tbl_x %>% map(~unique(.) %>% length)
   top_3_values <- colnames(tbl_x) %>%
     map(~count_(tbl_x,.) %>%
