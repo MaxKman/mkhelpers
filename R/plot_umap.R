@@ -61,7 +61,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
     labs(x = "UMAP 1", y = "UMAP 2", title = title) +
     geom_point(stroke = 0, size = point_size, alpha = alpha)
 
-  if(tbl_x %>% pull({{feature_x}}) %>% class == "numeric") {mode <- "continuous"}
+  if(tbl_x %>% pull({{feature_x}}) %>% class %in% c("integer", "numeric")) {mode <- "continuous"}
   if(tbl_x %>% pull({{feature_x}}) %>% class %in% c("character", "factor")) {mode <- "discrete"}
 
   if(mode == "continuous") {
