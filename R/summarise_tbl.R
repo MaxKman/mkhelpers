@@ -22,6 +22,24 @@ summarise_tbl <- function(tbl_x) {
           str_replace_na %>%
           str_c(collapse = "; ")) %>%
     unlist
+  min_value <- tbl_x %>% map(function(col_x) {
+    if(class(col_x) %in% c("numeric", "Date", "ordered")) {
+      return(min(col_x))
+    }
+    return(NA)
+  }) %>% unlist
+  max_value <- tbl_x %>% map(function(col_x) {
+    if(class(col_x) %in% c("numeric", "Date", "ordered")) {
+      return(max(col_x))
+    }
+    return(NA)
+  }) %>% unlist
+  mean_value <- tbl_x %>% map(function(col_x) {
+    if(class(col_x) %in% c("numeric")) {
+      return(mean(col_x))
+    }
+    return(NA)
+  }) %>% unlist
   # The as.character conversion needs to be done for each column separately
   # otherwise errors are easily introduced, e.g. for dates
   draw_case <- function() {
@@ -41,6 +59,9 @@ summarise_tbl <- function(tbl_x) {
          types = tbl_x %>% map(~class(.) %>% str_c(collapse = ", ")) %>% unlist,
          n_unique_values = n_unique_values,
          top_10_values = top_10_values,
+         min = min_value,
+         max = max_value,
+         mean = mean_value,
          case_1 = case_1,
          case_2 = case_2,
          case_3 = case_3,
