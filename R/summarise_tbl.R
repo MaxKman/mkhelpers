@@ -23,20 +23,20 @@ summarise_tbl <- function(tbl_x) {
           str_c(collapse = "; ")) %>%
     unlist
   min_value <- tbl_x %>% map(function(col_x) {
-    if(class(col_x) %in% c("numeric", "Date", "ordered")) {
-      return(min(col_x))
+    if(class(col_x) %in% c("numeric", "integer", "Date", "ordered")) {
+      return(min(col_x, na.rm = TRUE))
     }
     return(NA)
   }) %>% unlist
   max_value <- tbl_x %>% map(function(col_x) {
-    if(class(col_x) %in% c("numeric", "Date", "ordered")) {
-      return(max(col_x))
+    if(class(col_x) %in% c("numeric", "integer", "Date", "ordered")) {
+      return(max(col_x, na.rm = TRUE))
     }
     return(NA)
   }) %>% unlist
   mean_value <- tbl_x %>% map(function(col_x) {
-    if(class(col_x) %in% c("numeric")) {
-      return(mean(col_x))
+    if(class(col_x) %in% c("numeric", "integer")) {
+      return(mean(col_x, na.rm = TRUE))
     }
     return(NA)
   }) %>% unlist
