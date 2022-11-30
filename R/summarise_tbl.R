@@ -24,21 +24,21 @@ summarise_tbl <- function(tbl_x) {
     unlist
   min_value <- tbl_x %>% map(function(col_x) {
     if(class(col_x) %in% c("numeric", "integer", "Date", "ordered")) {
-      return(min(col_x, na.rm = TRUE))
+      return(min(col_x, na.rm = TRUE) %>% as.character())
     }
-    return(NA)
+    return(NA_character_)
   }) %>% unlist
   max_value <- tbl_x %>% map(function(col_x) {
     if(class(col_x) %in% c("numeric", "integer", "Date", "ordered")) {
-      return(max(col_x, na.rm = TRUE))
+      return(max(col_x, na.rm = TRUE) %>% as.character())
     }
-    return(NA)
+    return(NA_character_)
   }) %>% unlist
   mean_value <- tbl_x %>% map(function(col_x) {
     if(class(col_x) %in% c("numeric", "integer")) {
-      return(mean(col_x, na.rm = TRUE))
+      return(mean(col_x, na.rm = TRUE) %>% as.character())
     }
-    return(NA)
+    return(NA_character_)
   }) %>% unlist
   # The as.character conversion needs to be done for each column separately
   # otherwise errors are easily introduced, e.g. for dates
