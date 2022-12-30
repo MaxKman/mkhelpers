@@ -95,7 +95,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
-  md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{add_var}}, {{batch_col}}) %>% distinct() %>% ungroup %>% as.data.frame() %>% mutate({{sample_col}} := make.unique({{sample_col}}))
+  md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{add_var}}, {{batch_col}}) %>% distinct() %>% ungroup %>% as.data.frame()
   rownames(md_persample) <- md_persample %>% pull({{sample_col}})
 
   samples_g1 <- md %>% filter({{group_col}} == group1) %>% pull({{sample_col}}) %>% unique
