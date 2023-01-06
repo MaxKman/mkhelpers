@@ -23,6 +23,7 @@ DGE_analysis(
   cell_name_col = cell_name,
   exp_percentage = 5,
   save_results = FALSE,
+  save_raw_deseq_objs = FALSE,
   savepath = "../../RDS/DGE"
 )
 }
@@ -61,7 +62,9 @@ DGE_analysis(
 
 \item{exp_percentage}{Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis}
 
-\item{save_results}{Whether to save results to an RDS file (default: FALSE)}
+\item{save_results}{Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)}
+
+\item{save_raw_deseq_objs}{Save raw DEseq 2 objects, to allow for costum contrast extraction}
 
 \item{savepath}{Path where the results of the analysis should be saved}
 }
@@ -102,6 +105,7 @@ future::plan(future::sequential())
 tictoc::tic()
 test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
                          md = pbmc_ifnb@meta.data,
+                         title = "testrun",
                          cluster_col = seurat_annotations,
                          sample_col = simulated_donors,
                          group_col = stim,
@@ -123,6 +127,7 @@ future::plan(future::multisession(workers = 10, gc = TRUE))
 tictoc::tic()
 test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
                          md = pbmc_ifnb@meta.data,
+                         title = "testrun",
                          cluster_col = seurat_annotations,
                          sample_col = simulated_donors,
                          group_col = stim,

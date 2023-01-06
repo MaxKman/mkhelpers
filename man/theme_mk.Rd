@@ -5,7 +5,7 @@
 \alias{theme_mk}
 \title{Costum ggplot2 theme}
 \format{
-An object of class \code{theme} (inherits from \code{gg}) of length 93.
+An object of class \code{theme} (inherits from \code{gg}) of length 94.
 }
 \usage{
 theme_mk

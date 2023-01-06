@@ -17,7 +17,8 @@
 #' @param min_n_samples_group Minimum number of samples in each group to perform DGE analysis. E.g. if set to 3 only 3 versus 3 comparisons will be carried out.
 #' @param cell_name_col The name of the column that contains the cell identifier
 #' @param exp_percentage Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis
-#' @param save_results Whether to save results to an RDS file (default: FALSE)
+#' @param save_results Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)
+#' @param save_raw_deseq_objs Save raw DEseq 2 objects, to allow for costum contrast extraction
 #' @param savepath Path where the results of the analysis should be saved
 #'
 #' @return A dataframe with the DEseq2 results with an additional column indicating the cluster
@@ -54,6 +55,7 @@
 #' tictoc::tic()
 #' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
 #'                          md = pbmc_ifnb@meta.data,
+#'                          title = "testrun",
 #'                          cluster_col = seurat_annotations,
 #'                          sample_col = simulated_donors,
 #'                          group_col = stim,
@@ -75,6 +77,7 @@
 #' tictoc::tic()
 #' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
 #'                          md = pbmc_ifnb@meta.data,
+#'                          title = "testrun",
 #'                          cluster_col = seurat_annotations,
 #'                          sample_col = simulated_donors,
 #'                          group_col = stim,
@@ -91,7 +94,7 @@
 #' tictoc::toc()
 #' future:::ClusterRegistry("stop")
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, save_results = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
@@ -157,7 +160,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   })
 
   tictoc::tic()
-  results <- suppressMessages(furrr::future_map(cells_cluster_sample_expr, function(x) {
+  results <- suppressMessages(furrr::future_imap(cells_cluster_sample_expr, function(x, name_x) {
     x <- map(x, as.matrix) # somehow the parallel execution needs this to work
     # Subset on genes, which are at least expressed in x% of cells of each sample within a group
     sample_genes <- map(x, ~rownames(.[Matrix::rowSums(. > 0) >= ncol(.)*exp_percentage/100,]))
@@ -165,7 +168,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
     rows_1 <- sample_genes[names(sample_genes) %in% samples_g1] %>% purrr::reduce(.x = ., .f = intersect)
     rows_2 <- sample_genes[names(sample_genes) %in% samples_g2] %>% purrr::reduce(., intersect)
     rows <- c(rows_1, rows_2) %>% unique()
-    print(str_c("Performing DGE analysis on ", length(rows), " genes!"))
+    print(str_c("Cluster ", name_x, ":Performing DGE analysis on ", length(rows), " genes!"))
     if(length(rows) == 0) {
       return(data.frame())
     }
@@ -174,7 +177,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
     n_cells <- map(x, ncol)
     #aggregate counts
     x <- map(x, ~Matrix::rowSums(.))
-    #normalise
+    #normalize
     x <- map2(x, n_cells, function(x_x, n_cells_x) {
       x_x <- x_x / n_cells_x * n_cells_normalize
       round(x_x)
@@ -190,6 +193,10 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
                                   design = design)
 
     DEG <- DESeq2::DESeq(DEG)
+    if(save_raw_deseq_objs) {
+      dir.create(str_c(savepath, "/deseq2_objects"), showWarnings = FALSE)
+      saveRDS(DEG, str_c(savepath, "/deseq2_objects/", "/DGE_", n_cells_normalize, "_cells_", title, "_", name_x, ".RDS"))
+    }
     res <- DESeq2::results(DEG, pAdjustMethod = "fdr") %>% as.data.frame() %>% mutate(gene = rownames(.))
     return(res)
   }))
@@ -201,7 +208,23 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   results <- results %>% do.call(rbind, .) %>% as_tibble
   if(save_results) {
     dir.create(savepath, recursive = TRUE)
-    saveRDS(results, str_c(savepath, "/DGE_", n_cells_normalize, "_cells_", deparse(substitute(cluster_col)), "_", title, ".RDS"))
+    saveRDS(results, str_c(savepath, "/DGE_", n_cells_normalize, "_cells_", title, ".RDS"))
+    cluster_col_str <- deparse(substitute(cluster_col))
+    group_col_str <- deparse(substitute(group_col))
+    write_lines(file = str_c(savepath, "/DGE_", n_cells_normalize, "_cells_", title, ".log"),
+                glue::glue("Title: {title}",
+                     "Cluster column: {cluster_col_str}",
+                     "Sample column: {sample_col_str}",
+                     "Group column: {group_col_str}",
+                     "Group 1: {group1}",
+                     "Group 2: {group2}",
+                     "Design: {deparse1(design)}",
+                     "Balance batches: {balance_batches}",
+                     "Number of cells to normalize to: {n_cells_normalize}",
+                     "Minimum cells per sample: {n_cells_min}",
+                     "Minimum number of samples per group: {min_n_samples_group}",
+                     "Minimum expression percentage: {exp_percentage}",
+                     .sep = "\n"))
   }
   return(results)
 }
