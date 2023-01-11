@@ -26,7 +26,8 @@ plot_umap(
   out_height = 89,
   show_legend = TRUE,
   show_labels = FALSE,
-  repel_labels = FALSE,
+  pretty_labels = FALSE,
+  pretty_labels_precision = 50,
   label_size = 2
 )
 }
@@ -71,7 +72,9 @@ plot_umap(
 
 \item{show_labels}{Whether to label the mean coordinates of discrete feature values.}
 
-\item{repel_labels}{Whether to repel labels and connect them with a line to the labeled point}
+\item{pretty_labels}{Whether to make labels pretty (takes longer)}
+
+\item{pretty_labels_precision}{Tune the precision of label positioning. Higher values are more precise and take more processing time.}
 
 \item{label_size}{Size of labels.}
 }

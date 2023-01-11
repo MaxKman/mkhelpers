@@ -20,7 +20,8 @@
 #' @param out_height Height in mm of the png output.
 #' @param show_legend Whether to show the ggplot legend.
 #' @param show_labels Whether to label the mean coordinates of discrete feature values.
-#' @param repel_labels Whether to repel labels and connect them with a line to the labeled point
+#' @param pretty_labels Whether to make labels pretty (takes longer)
+#' @param pretty_labels_precision Tune the precision of label positioning. Higher values are more precise and take more processing time.
 #' @param label_size Size of labels.
 #'
 #' @return A ggplot object (when output is set to "plot")
@@ -44,7 +45,7 @@
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "Seurat clusters", feature_x = seurat_clusters, order_values = "random", show_legend = FALSE, show_labels = TRUE, point_size = 0.5)
 #'  plot_umap(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~", title = "CD3 expression", feature_x = CD3D, point_size = 0.5)
 #' }
-plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), invert_sort_direction = FALSE, point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, repel_labels = FALSE, label_size = 2) {
+plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile_limits = c(0.3, 0.99), feature_colors = NULL, title, output = c("image", "plot"), output_path, dpi = 300, order_values = c("sorted", "random"), invert_sort_direction = FALSE, point_size = 0.3, point_size_legend = 1.5, alpha = 1, plot_width = 60, plot_height = 60, out_width = 89, out_height = 89, show_legend = TRUE, show_labels = FALSE, pretty_labels = FALSE, pretty_labels_precision = 50, label_size = 2) {
 
   if(order_values[[1]] == "sorted" & !invert_sort_direction) {
     tbl_x <- tbl_x %>%
@@ -78,38 +79,55 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
       p <- p +
         scale_color_manual(values = feature_colors)
     }
-    if(show_labels) {
-      # label_df <- tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}, {{feature_x}}) %>%
-      #   group_by({{feature_x}}) %>%
-      #   summarise({{umap_dim_col_1}} := mean({{umap_dim_col_1}}), {{umap_dim_col_2}} := mean({{umap_dim_col_2}}))
+    if(pretty_labels) {
+      print("Building pretty labels, stay tuned ...")
+      umap_1_min <- min(tbl_x %>% pull({{umap_dim_col_1}}))
+      umap_1_max <- max(tbl_x %>% pull({{umap_dim_col_1}}))
+      umap_2_min <- min(tbl_x %>% pull({{umap_dim_col_2}}))
+      umap_2_max <- max(tbl_x %>% pull({{umap_dim_col_2}}))
 
-        label_umap_1 <- tbl_x %>%
-          group_by({{feature_x}}) %>%
-          mutate(bins = cut({{umap_dim_col_1}}, breaks = seq(min({{umap_dim_col_1}}), max({{umap_dim_col_1}}), length.out = 10))) %>%
-          group_by({{feature_x}}, bins) %>%
-          summarise(n = n(), {{umap_dim_col_1}} := mean({{umap_dim_col_1}})) %>%
-          group_by({{feature_x}}) %>%
-          slice_max(n, n = 2, with_ties = FALSE) %>%
-          summarise({{umap_dim_col_1}} := mean({{umap_dim_col_1}}))
+      # Helper function for euclidean distance
+      euclidean_dist <- function(x1, y1, x2, y2) {
+        sqrt((x2 - x1)^2 + (y2 - y1)^2)
+      }
 
-        label_umap_2 <- tbl_x %>%
-          group_by({{feature_x}}) %>%
-          mutate(bins = cut({{umap_dim_col_2}}, breaks = seq(min({{umap_dim_col_2}}), max({{umap_dim_col_2}}), length.out = 10))) %>%
-          group_by({{feature_x}}, bins) %>%
-          summarise(n = n(), {{umap_dim_col_2}} := mean({{umap_dim_col_2}})) %>%
-          group_by({{feature_x}}) %>%
-          slice_max(n, n = 2, with_ties = FALSE) %>%
-          summarise({{umap_dim_col_2}} := mean({{umap_dim_col_2}}))
+      # Define a grid of points
+      grid_points <- expand.grid(seq(umap_1_min, umap_1_max, length.out = pretty_labels_precision), seq(umap_2_min, umap_2_max, length.out = pretty_labels_precision)) %>%
+        rename(label_coord_1 = Var1, label_coord_2 = Var2) %>%
+        mutate(point_id = row_number())
 
-        label_df <- left_join(label_umap_1, label_umap_2)
+      # Function to find nearest grid point
+      find_grid_point <- function(coords) {
+        grid_points %>%
+          rowwise() %>%
+          mutate(euclidean_dist = euclidean_dist(coords[[1]], coords[[2]], label_coord_1, label_coord_2)) %>%
+          ungroup %>%
+          slice_min(euclidean_dist, with_ties = FALSE) %>%
+          pull(point_id)
+      }
 
-      if(repel_labels) {
-        p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0, segment.size = 0.3, box.padding = 0.8)
+      # Find nearest grid point for a subset of each cluster and identify points with most cells nearby as reference for labelling
+      label_df <- tbl_x %>%
+        group_by({{feature_x}}) %>%
+        sample_n(pretty_labels_precision, replace = TRUE) %>%
+        rowwise() %>%
+        mutate(point_id = find_grid_point(c({{umap_dim_col_1}}, {{umap_dim_col_2}}))) %>%
+        group_by(point_id, {{feature_x}}) %>%
+        summarize(n_cells = n()) %>%
+        group_by({{feature_x}}) %>%
+        slice_max(n_cells, with_ties = FALSE) %>%
+        ungroup %>%
+        left_join(grid_points) %>%
+        rename({{umap_dim_col_1}} := label_coord_1, {{umap_dim_col_2}} := label_coord_2) %>%
+        select(-point_id, -n_cells) %>%
+        ungroup %>%
+        bind_rows(tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}) %>% mutate({{feature_x}} := "") %>% relocate({{feature_x}}))
+
+        # Label the clusters
+        p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0, segment.size = 0.3, box.padding = 0.3, max.overlaps = 1000)
       } else {
         p <- p + geom_text(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black")
       }
-
-    }
   }
 
   if(!show_legend) {
