@@ -79,11 +79,32 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
         scale_color_manual(values = feature_colors)
     }
     if(show_labels) {
-      label_df <- tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}, {{feature_x}}) %>%
-        group_by({{feature_x}}) %>%
-        summarise({{umap_dim_col_1}} := mean({{umap_dim_col_1}}), {{umap_dim_col_2}} := mean({{umap_dim_col_2}}))
+      # label_df <- tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}, {{feature_x}}) %>%
+      #   group_by({{feature_x}}) %>%
+      #   summarise({{umap_dim_col_1}} := mean({{umap_dim_col_1}}), {{umap_dim_col_2}} := mean({{umap_dim_col_2}}))
+
+        label_umap_1 <- tbl_x %>%
+          group_by({{feature_x}}) %>%
+          mutate(bins = cut({{umap_dim_col_1}}, breaks = seq(min({{umap_dim_col_1}}), max({{umap_dim_col_1}}), length.out = 10))) %>%
+          group_by({{feature_x}}, bins) %>%
+          summarise(n = n(), {{umap_dim_col_1}} := mean({{umap_dim_col_1}})) %>%
+          group_by({{feature_x}}) %>%
+          slice_max(n, n = 2, with_ties = FALSE) %>%
+          summarise({{umap_dim_col_1}} := mean({{umap_dim_col_1}}))
+
+        label_umap_2 <- tbl_x %>%
+          group_by({{feature_x}}) %>%
+          mutate(bins = cut({{umap_dim_col_2}}, breaks = seq(min({{umap_dim_col_2}}), max({{umap_dim_col_2}}), length.out = 10))) %>%
+          group_by({{feature_x}}, bins) %>%
+          summarise(n = n(), {{umap_dim_col_2}} := mean({{umap_dim_col_2}})) %>%
+          group_by({{feature_x}}) %>%
+          slice_max(n, n = 2, with_ties = FALSE) %>%
+          summarise({{umap_dim_col_2}} := mean({{umap_dim_col_2}}))
+
+        label_df <- left_join(label_umap_1, label_umap_2)
+
       if(repel_labels) {
-        p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0)
+        p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0, segment.size = 0.3, box.padding = 0.8)
       } else {
         p <- p + geom_text(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black")
       }
