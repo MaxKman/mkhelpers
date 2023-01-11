@@ -26,6 +26,7 @@ plot_umap(
   out_height = 89,
   show_legend = TRUE,
   show_labels = FALSE,
+  repel_labels = FALSE,
   label_size = 2
 )
 }
@@ -69,6 +70,8 @@ plot_umap(
 \item{show_legend}{Whether to show the ggplot legend.}
 
 \item{show_labels}{Whether to label the mean coordinates of discrete feature values.}
+
+\item{repel_labels}{Whether to repel labels and connect them with a line to the labeled point}
 
 \item{label_size}{Size of labels.}
 }
