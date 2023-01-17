@@ -107,13 +107,18 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
       }
 
       # Find nearest grid point for a subset of each cluster and identify points with most cells nearby as reference for labelling
-      label_df <- tbl_x %>%
+      label_df_tmp <- tbl_x %>%
         group_by({{feature_x}}) %>%
         sample_n(pretty_labels_precision, replace = TRUE) %>%
         rowwise() %>%
         mutate(point_id = find_grid_point(c({{umap_dim_col_1}}, {{umap_dim_col_2}}))) %>%
         group_by(point_id, {{feature_x}}) %>%
-        summarize(n_cells = n()) %>%
+        mutate(n_cells = n()) %>%
+        slice_max(n_cells, n = ceiling(nrow(grid_points) * 0.9), with_ties = TRUE) # This ensures that the labels are not trying to dodge individual cells situated between clusters
+
+      label_df <- label_df_tmp %>%
+        select(point_id, {{feature_x}}, n_cells) %>%
+        distinct %>%
         group_by({{feature_x}}) %>%
         slice_max(n_cells, with_ties = FALSE) %>%
         ungroup %>%
@@ -121,10 +126,10 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
         rename({{umap_dim_col_1}} := label_coord_1, {{umap_dim_col_2}} := label_coord_2) %>%
         select(-point_id, -n_cells) %>%
         ungroup %>%
-        bind_rows(tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}) %>% mutate({{feature_x}} := "") %>% relocate({{feature_x}}))
+        bind_rows(label_df_tmp %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}) %>% mutate({{feature_x}} := "") %>% relocate({{feature_x}}))
 
         # Label the clusters
-        p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0, segment.size = 0.3, box.padding = 0.1, max.overlaps = nrow(tbl_x)*0.1)
+        p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0, segment.size = 0.2, box.padding = 0.3, max.overlaps = nrow(tbl_x)*0.5, max.time = 10, max.iter = 1000000, force = 1)
       } else {
         p <- p + geom_text(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black")
       }
