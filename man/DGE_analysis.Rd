@@ -22,6 +22,9 @@ DGE_analysis(
   min_n_samples_group,
   cell_name_col = cell_name,
   exp_percentage = 5,
+  exp_percentage_strict = FALSE,
+  exp_percentage_type = c("intersect", "union"),
+  aggr_counts_non_zero_percentage = 90,
   save_results = FALSE,
   save_raw_deseq_objs = FALSE,
   savepath = "../../RDS/DGE"
@@ -61,6 +64,12 @@ DGE_analysis(
 \item{cell_name_col}{The name of the column that contains the cell identifier}
 
 \item{exp_percentage}{Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis}
+
+\item{exp_percentage_strict}{If set to TRUE, only those genes will be included in the DGE analysis, which are expressed in exp_percentage cells in each sample in a cluster from one group. If set to FALSE the inclusion criterion is an average expression in exp_percentage cells across samples (default: FALSE)}
+
+\item{exp_percentage_type}{Whether to select genes, which meet the exp_percentage criterion in both groups ('intersect') or in one or both groups ('union'). Default: 'intersect'.}
+
+\item{aggr_counts_non_zero_percentage}{This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.}
 
 \item{save_results}{Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)}
 

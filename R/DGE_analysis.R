@@ -17,6 +17,9 @@
 #' @param min_n_samples_group Minimum number of samples in each group to perform DGE analysis. E.g. if set to 3 only 3 versus 3 comparisons will be carried out.
 #' @param cell_name_col The name of the column that contains the cell identifier
 #' @param exp_percentage Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis
+#' @param exp_percentage_strict If set to TRUE, only those genes will be included in the DGE analysis, which are expressed in exp_percentage cells in each sample in a cluster from one group. If set to FALSE the inclusion criterion is an average expression in exp_percentage cells across samples (default: FALSE)
+#' @param exp_percentage_type Whether to select genes, which meet the exp_percentage criterion in both groups ('intersect') or in one or both groups ('union'). Default: 'intersect'.
+#' @param aggr_counts_non_zero_percentage This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.
 #' @param save_results Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)
 #' @param save_raw_deseq_objs Save raw DEseq 2 objects, to allow for costum contrast extraction
 #' @param savepath Path where the results of the analysis should be saved
@@ -94,7 +97,7 @@
 #' tictoc::toc()
 #' future:::ClusterRegistry("stop")
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
@@ -162,17 +165,41 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   tictoc::tic()
   results <- suppressMessages(furrr::future_imap(cells_cluster_sample_expr, function(x, name_x) {
     x <- map(x, as.matrix) # somehow the parallel execution needs this to work
-    # Subset on genes, which are at least expressed in x% of cells of each sample within a group
-    sample_genes <- map(x, ~rownames(.[Matrix::rowSums(. > 0) >= ncol(.)*exp_percentage/100,]))
 
-    rows_1 <- sample_genes[names(sample_genes) %in% samples_g1] %>% purrr::reduce(.x = ., .f = intersect)
-    rows_2 <- sample_genes[names(sample_genes) %in% samples_g2] %>% purrr::reduce(., intersect)
-    rows <- c(rows_1, rows_2) %>% unique()
-    print(str_c("Cluster ", name_x, ":Performing DGE analysis on ", length(rows), " genes!"))
-    if(length(rows) == 0) {
+    if(exp_percentage_strict) {
+      # Subset on genes, which are at least expressed in x% of cells of each sample within a group
+      sample_genes <- map(x, ~rownames(.[Matrix::rowSums(. > 0) >= ncol(.)*exp_percentage/100,]))
+      genes_1 <- sample_genes[names(sample_genes) %in% samples_g1] %>% purrr::reduce(.x = ., .f = intersect)
+      genes_2 <- sample_genes[names(sample_genes) %in% samples_g2] %>% purrr::reduce(., intersect)
+      if(exp_percentage_type[[1]] == 'union') {
+        genes_select <- union(genes_1, genes_2)
+      } else {
+        genes_select <- intersect(genes_1, genes_2)
+      }
+
+    } else {
+      # Subset on genes, which are on average expressed in exp_percentage cells in each group
+      rowsumsdf <- map_dfc(x, ~Matrix::rowSums(. > 0) / ncol(.))
+      genes_select <- map(list(samples_g1, samples_g2), function(samples_x) {
+        genes_select <- rowsumsdf[,colnames(rowsumsdf) %in% samples_x] %>% rowMeans()
+        names(genes_select) <- rownames(x[[1]])
+        genes_select <- genes_select[genes_select >= exp_percentage/100]
+        return(names(genes_select))
+      })
+      if(exp_percentage_type[[1]] == 'union') {
+        genes_select <- genes_select %>% purrr::reduce(union)
+      } else {
+        genes_select <- genes_select %>% purrr::reduce(intersect)
+      }
+    }
+
+    if(length(genes_select) == 0) {
       return(data.frame())
     }
-    x <- map(x, ~.[rows,])
+
+    x <- map(x, ~.[genes_select,])
+    print(str_c("Cluster ", name_x, ":Performing DGE analysis on ", nrow(x), " genes!"))
+
     cnames <- names(x)
     n_cells <- map(x, ncol)
     #aggregate counts
@@ -184,8 +211,18 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
     }) %>% purrr::reduce(cbind)
     colnames(x) <- cnames
 
-    fData <- data.frame(names = rows)
-    rownames(fData) <- rows
+    # Select genes, whose aggregated counts are non-zero in > x% of samples
+    genes_select_greater_zero <- map(list(samples_control_unstim, samples_control_stim), function(samples_x) {
+      greater_zero <- (x[,colnames(x) %in% samples_x] > 0) %>% as.matrix()
+      greater_zero <- rowSums(greater_zero) / ncol(greater_zero)
+      greater_zero[greater_zero > aggr_counts_non_zero_percentage / 100] %>% names
+    }) %>% purrr::reduce(intersect)
+    x <- x[genes_select_greater_zero,]
+
+    print(str_c("Cluster ", name_x, ": Performing DGE analysis on ", nrow(x), " genes!"))
+
+    fData <- data.frame(names = genes_select)
+    rownames(fData) <- genes_select
     cData <- md_persample %>% filter(get(sample_col_str) %in% colnames(x))
     x <- x[,rownames(cData)]
     DEG <- DESeq2::DESeqDataSetFromMatrix(countData = x,
