@@ -158,6 +158,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   }
   cells_cluster_sample <- cells_cluster_sample[!is.na(cells_cluster_sample)]
 
+  print("Extracting expression values from count matrix. This can take a while...")
   cells_cluster_sample_expr <- map(cells_cluster_sample, function(x) {
     map(x, ~m[,.])
   })
