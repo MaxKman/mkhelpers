@@ -17,7 +17,8 @@ aggregate_exp_data(
   cell_name_col = cell_name,
   expr_format = c("wide", "long"),
   subset = "none",
-  subset_col
+  subset_col,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ aggregate_exp_data(
 \item{subset}{Provide identifiers, found in subset_col, on which to subset (e.g. a character vector of cell names or cluster identities)}
 
 \item{subset_col}{Provide a name of metadata column here to use for subsetting the data}
+
+\item{verbose}{Whether to print messages. Default: TRUE}
 }
 \value{
 A matrix with aggregation groups as columns and genes as rows (return_matrix = TRUE), or a dataframe containing the same information  (return_matrix = FALSE)
