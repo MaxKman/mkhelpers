@@ -136,7 +136,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
 
   tictoc::tic()
   results <- suppressMessages(imap(cells_cluster_sample_expr, function(x, name_x) {
-    x <- map(x, as.matrix) # somehow the parallel execution needs this to work
+    x <- map(x, as.matrix)
 
     if(exp_percentage_strict) {
       # Subset on genes, which are at least expressed in x% of cells of each sample within a group
@@ -170,7 +170,6 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
     }
 
     x <- map(x, ~.[genes_select,])
-    print(str_c("Cluster ", name_x, ":Performing DGE analysis on ", nrow(x), " genes!"))
 
     cnames <- names(x)
     n_cells <- map(x, ncol)
