@@ -81,7 +81,7 @@ DGE_analysis(
 A dataframe with the DEseq2 results with an additional column indicating the cluster
 }
 \description{
-This function can be run in parallel by setting up a future environment. See examples.
+DEseq2 wrapper for pseudobulk differential gene expression analysis in single cell data
 }
 \examples{
 \dontrun{
@@ -108,10 +108,6 @@ pbmc_ifnb <- AddMetaData(pbmc_ifnb, add_donors)
 donor_remove <- pbmc_ifnb@meta.data$simulated_donors \%>\% unique \%>\% .[[1]]
 pbmc_ifnb <- subset(pbmc_ifnb, simulated_donors != donor_remove)
 
-# run sequential:
-options(future.globals.maxSize = 20*1024^3)
-future::plan(future::sequential())
-tictoc::tic()
 test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
                          md = pbmc_ifnb@meta.data,
                          title = "testrun",
@@ -128,29 +124,5 @@ test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
                          min_n_samples_group = 3,
                          cell_name_col = cell_name,
                          exp_percentage = 1)
-tictoc::toc()
-
-# run in parallel:
-options(future.globals.maxSize = 20*1024^3)
-future::plan(future::multisession(workers = 10, gc = TRUE))
-tictoc::tic()
-test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
-                         md = pbmc_ifnb@meta.data,
-                         title = "testrun",
-                         cluster_col = seurat_annotations,
-                         sample_col = simulated_donors,
-                         group_col = stim,
-                         group1 = "CTRL",
-                         group2 = "STIM",
-                         design = ~simulated_batches + stim,
-                         balance_batches = TRUE,
-                         batch_col = simulated_batches,
-                         n_cells_normalize = 10000,
-                         n_cells_min = 10,
-                         min_n_samples_group = 3,
-                         cell_name_col = cell_name,
-                         exp_percentage = 1)
-tictoc::toc()
-future:::ClusterRegistry("stop")
  }
 }

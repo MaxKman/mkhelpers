@@ -1,5 +1,4 @@
 #' DEseq2 wrapper for pseudobulk differential gene expression analysis in single cell data
-#' @description This function can be run in parallel by setting up a future environment. See examples.
 #' @param m A single cell matrix with genes as rows and cells as columns
 #' @param md A metadata dataframe (must contain cluster_col, sample_col and group_col)
 #' @param cluster_col The metadata column identifying the cluster of each cell
@@ -52,10 +51,6 @@
 #' donor_remove <- pbmc_ifnb@meta.data$simulated_donors %>% unique %>% .[[1]]
 #' pbmc_ifnb <- subset(pbmc_ifnb, simulated_donors != donor_remove)
 #'
-#' # run sequential:
-#' options(future.globals.maxSize = 20*1024^3)
-#' future::plan(future::sequential())
-#' tictoc::tic()
 #' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
 #'                          md = pbmc_ifnb@meta.data,
 #'                          title = "testrun",
@@ -72,30 +67,6 @@
 #'                          min_n_samples_group = 3,
 #'                          cell_name_col = cell_name,
 #'                          exp_percentage = 1)
-#' tictoc::toc()
-#'
-#' # run in parallel:
-#' options(future.globals.maxSize = 20*1024^3)
-#' future::plan(future::multisession(workers = 10, gc = TRUE))
-#' tictoc::tic()
-#' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
-#'                          md = pbmc_ifnb@meta.data,
-#'                          title = "testrun",
-#'                          cluster_col = seurat_annotations,
-#'                          sample_col = simulated_donors,
-#'                          group_col = stim,
-#'                          group1 = "CTRL",
-#'                          group2 = "STIM",
-#'                          design = ~simulated_batches + stim,
-#'                          balance_batches = TRUE,
-#'                          batch_col = simulated_batches,
-#'                          n_cells_normalize = 10000,
-#'                          n_cells_min = 10,
-#'                          min_n_samples_group = 3,
-#'                          cell_name_col = cell_name,
-#'                          exp_percentage = 1)
-#' tictoc::toc()
-#' future:::ClusterRegistry("stop")
 #'  }
 DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
@@ -159,12 +130,12 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   cells_cluster_sample <- cells_cluster_sample[!is.na(cells_cluster_sample)]
 
   print("Extracting expression values from count matrix. This can take a while...")
-  cells_cluster_sample_expr <- map(cells_cluster_sample, function(x) {
+  cells_cluster_sample_expr <- map(cells_cluster_sample, .progress = TRUE, function(x) {
     map(x, ~m[,.])
   })
 
   tictoc::tic()
-  results <- suppressMessages(furrr::future_imap(cells_cluster_sample_expr, function(x, name_x) {
+  results <- suppressMessages(imap(cells_cluster_sample_expr, function(x, name_x) {
     x <- map(x, as.matrix) # somehow the parallel execution needs this to work
 
     if(exp_percentage_strict) {
