@@ -212,7 +212,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
     colnames(x) <- cnames
 
     # Select genes, whose aggregated counts are non-zero in > x% of samples
-    genes_select_greater_zero <- map(list(samples_control_unstim, samples_control_stim), function(samples_x) {
+    genes_select_greater_zero <- map(list(samples_g1, samples_g2), function(samples_x) {
       greater_zero <- (x[,colnames(x) %in% samples_x] > 0) %>% as.matrix()
       greater_zero <- rowSums(greater_zero) / ncol(greater_zero)
       greater_zero[greater_zero > aggr_counts_non_zero_percentage / 100] %>% names
