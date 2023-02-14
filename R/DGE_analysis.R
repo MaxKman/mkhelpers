@@ -151,7 +151,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
   # Print message to note which samples are kept
   for (k in seq_along(cells_cluster_sample)) {
     if(!is.na(cells_cluster_sample[[k]][[1]][[1]])) {
-      print(glue::glue("Cluster {names(cells_cluster_sample)[[k]]}:\n{names(cells_cluster_sample[[k]]) %>% str_c(collapse = ', ')}\nare kept, which share batches across groups!\n\n"))
+      print(glue::glue("Cluster {names(cells_cluster_sample)[[k]]}:\n{names(cells_cluster_sample[[k]]) %>% str_c(collapse = ', ')}\nare kept!\n\n"))
     } else {
       print(glue::glue("Cluster {names(cells_cluster_sample)[[k]]}: too few samples, removed from analysis!\n\n"))
     }
