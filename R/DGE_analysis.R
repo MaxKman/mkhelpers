@@ -196,11 +196,13 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
       aggr_exp <- map_dfr(colnames(x), function(sample_x) {
         cells_aggr <- md %>% filter({{sample_col}} == sample_x, {{cluster_col}} == name_x) %>% pull({{cell_name_col}})
         m_norm_sub <- m_norm[rownames(m_norm) %in% rownames(x), colnames(m_norm) %in% cells_aggr]
-        tibble(gene = rownames(m_norm_sub), exp =  Matrix::rowMeans (m_norm_sub), sample = sample_x)
-      })
+        tibble(gene = rownames(m_norm_sub), exp =  Matrix::rowMeans (m_norm_sub), sample = sample_x) %>%
+          left_join(md_persample %>% select({{sample_col}}, {{group_col}}))
+      }) %>%
+        pivot_wider(names_from = {{group_col}}, values_from = exp)
       View(aggr_exp)
-      return(NULL)
     }
+    return(NULL)
 
     print(str_c("Cluster ", name_x, ": Performing DGE analysis on ", nrow(x), " genes!"))
 
