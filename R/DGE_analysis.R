@@ -191,6 +191,19 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
     }) %>% purrr::reduce(intersect)
     x <- x[genes_select_greater_zero,]
 
+    # Apply log2fc cutoff
+    print(x[1:5,samples_g1])
+    print(x[1:5,samples_g2])
+    mean_expr_group_1 <- x[,samples_g1] %>% rowSums()
+    mean_expr_group_2 <- x[,samples_g2] %>% rowSums()
+    print(mean_expr_group_1[1:5])
+    print(mean_expr_group_2[1:5])
+    log2fc <- log2(mean_expr_group_2 / mean_expr_group_1)
+    print(log2fc[1:5])
+    log2fc <- log2fc[is.finite(log2fc) & abs(log2fc) >= lfc_threshold]
+    print(log2fc[1:5])
+    return(NULL)
+
     print(str_c("Cluster ", name_x, ": Performing DGE analysis on ", nrow(x), " genes!"))
 
     fData <- data.frame(names = genes_select)
