@@ -210,6 +210,11 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
       x <- x[rownames(x) %in% log2fc$gene %>% unique,]
     }
 
+    if(nrow(x) == 0) {
+      print(str_c("Cluster ", name_x, ": No genes left after applying filtering criteria, removing from DGE analysis."))
+      return(NULL)
+    }
+
     print(str_c("Cluster ", name_x, ": Performing DGE analysis on ", nrow(x), " genes!"))
 
     fData <- data.frame(names = genes_select)
@@ -225,14 +230,15 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
       dir.create(str_c(savepath, "/deseq2_objects"), showWarnings = FALSE)
       saveRDS(DEG, str_c(savepath, "/deseq2_objects/", "/DGE_", n_cells_normalize, "_cells_", title, "_", name_x, ".RDS"))
     }
-    res <- DESeq2::results(DEG, pAdjustMethod = "fdr", lfcThreshold = lfc_threshold) %>% as.data.frame() %>% mutate(gene = rownames(.))
+    res <- DESeq2::results(DEG, pAdjustMethod = "fdr", lfcThreshold = lfc_threshold) %>%
+      as.data.frame() %>%
+      mutate(gene = rownames(.)) %>%
+      mutate({{ cluster_col }} := name_x)
     return(res)
   }))
-
-  results <- map2(.x = names(results), .y = results, ~mutate(.y, {{ cluster_col }} := .x))
   tictoc::toc()
 
-  # the following is way faster than using purrr:reduce calls
+  # the following is way faster than using purrr::reduce calls
   results <- results %>% do.call(rbind, .) %>% as_tibble
   if(save_results) {
     dir.create(savepath, recursive = TRUE)
