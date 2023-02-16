@@ -1,5 +1,6 @@
 #' DEseq2 wrapper for pseudobulk differential gene expression analysis in single cell data
 #' @param m A single cell matrix with genes as rows and cells as columns
+#' @param m_norm A normalized single cell matrix with genes as rows and cells as columns (only required for log2fc filtering)
 #' @param md A metadata dataframe (must contain cluster_col, sample_col and group_col)
 #' @param cluster_col The metadata column identifying the cluster of each cell
 #' @param sample_col The metadata column identifying the sample to which each cell belongs (e.g. the donor)
@@ -19,7 +20,7 @@
 #' @param exp_percentage_strict If set to TRUE, only those genes will be included in the DGE analysis, which are expressed in exp_percentage cells in each sample in a cluster from one group. If set to FALSE the inclusion criterion is an average expression in exp_percentage cells across samples (default: FALSE)
 #' @param exp_percentage_type Whether to select genes, which meet the exp_percentage criterion in both groups ('intersect') or in one or both groups ('union'). Default: 'intersect'.
 #' @param aggr_counts_non_zero_percentage This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.
-#' @param lfc_threshold Log2 fold change treshold passed to DESeq2. See ?DESeq2::results.
+#' @param lfc_threshold Minimum required log2 fold change threshold required for differential gene expression testing. A normalized expression matrix needs to be provided (m_norm).
 #' @param save_results Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)
 #' @param save_raw_deseq_objs Save raw DEseq 2 objects, to allow for costum contrast extraction
 #' @param savepath Path where the results of the analysis should be saved
@@ -69,7 +70,7 @@
 #'                          cell_name_col = cell_name,
 #'                          exp_percentage = 1)
 #'  }
-DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
@@ -193,28 +194,29 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
 
     # Calculating log2fc and applying cutoff
     if(lfc_threshold > 0) {
-      aggr_exp <- map_dfr(colnames(x), function(sample_x) {
-        cells_aggr <- md %>% filter({{sample_col}} == sample_x, {{cluster_col}} == name_x) %>% pull({{cell_name_col}})
-        m_norm_sub <- m_norm[rownames(m_norm) %in% rownames(x), colnames(m_norm) %in% cells_aggr]
-        tibble(gene = rownames(m_norm_sub), exp =  Matrix::rowMeans (m_norm_sub), sample = sample_x) %>%
-          left_join(md_persample %>% select({{sample_col}}, {{group_col}}))
-      }) %>%
-        summarise(mean_exp = mean(exp), .by = c(gene, {{group_col}})) %>%
-        pivot_wider(names_from = {{group_col}}, values_from = mean_exp)
+      if(is.null(m_norm)) {
+        print("A normalized expression matrix needs to be provided to apply a log2fc threshold.")
+      } else {
+        aggr_exp <- map_dfr(colnames(x), function(sample_x) {
+          cells_aggr <- md %>% filter({{sample_col}} == sample_x, {{cluster_col}} == name_x) %>% pull({{cell_name_col}})
+          m_norm_sub <- m_norm[rownames(m_norm) %in% rownames(x), colnames(m_norm) %in% cells_aggr]
+          tibble(gene = rownames(m_norm_sub), exp =  Matrix::rowMeans (m_norm_sub), sample = sample_x) %>%
+            left_join(md_persample %>% select({{sample_col}}, {{group_col}}))
+        }) %>%
+          summarise(mean_exp = mean(exp), .by = c(gene, {{group_col}})) %>%
+          pivot_wider(names_from = {{group_col}}, values_from = mean_exp)
 
-      log2fc <- aggr_exp %>%
-        mutate(log2fc = log2(!!sym(group2) / !!sym(group1)))
-      log2fc <- log2fc %>%
-        filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
-      View(log2fc)
-      genes_log2fc <- log2fc %>% pull(gene) %>% unique
-      print(genes_log2fc)
-      x <- x[rownames(x) %in% genes_log2fc,,drop=FALSE]
-      print(nrow(x))
+        log2fc <- aggr_exp %>%
+          mutate(log2fc = log2(!!sym(group2) / !!sym(group1)))
+        log2fc <- log2fc %>%
+          filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
+        genes_log2fc <- log2fc %>% pull(gene) %>% unique
+        x <- x[rownames(x) %in% genes_log2fc,,drop=FALSE]
+      }
     }
 
-    if(nrow(x) == 0) {
-      print(str_c("Cluster ", name_x, ": No genes left after applying filtering criteria, removing from DGE analysis."))
+    if(nrow(x) <= 2) {
+      print(str_c("Cluster ", name_x, ": Less then 2 genes left after applying filtering criteria, removing from DGE analysis."))
       return(NULL)
     }
 

@@ -7,7 +7,7 @@
 DGE_analysis(
   m,
   md,
-  m_norm,
+  m_norm = NULL,
   cluster_col,
   sample_col,
   group_col,
@@ -36,6 +36,8 @@ DGE_analysis(
 \item{m}{A single cell matrix with genes as rows and cells as columns}
 
 \item{md}{A metadata dataframe (must contain cluster_col, sample_col and group_col)}
+
+\item{m_norm}{A normalized single cell matrix with genes as rows and cells as columns (only required for log2fc filtering)}
 
 \item{cluster_col}{The metadata column identifying the cluster of each cell}
 
@@ -73,7 +75,7 @@ DGE_analysis(
 
 \item{aggr_counts_non_zero_percentage}{This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.}
 
-\item{lfc_threshold}{Log2 fold change treshold passed to DESeq2. See ?DESeq2::results.}
+\item{lfc_threshold}{Minimum required log2 fold change threshold required for differential gene expression testing. A normalized expression matrix needs to be provided (m_norm).}
 
 \item{save_results}{Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)}
 
