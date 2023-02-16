@@ -199,7 +199,9 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
         tibble(gene = rownames(m_norm_sub), exp =  Matrix::rowMeans (m_norm_sub), sample = sample_x) %>%
           left_join(md_persample %>% select({{sample_col}}, {{group_col}}))
       }) %>%
-        pivot_wider(names_from = {{group_col}}, values_from = exp)
+        summarise(mean_exp = mean(exp), .by = c(gene, {{group_col}})) %>%
+        pivot_wider(names_from = {{group_col}}, values_from = mean_exp) #%>%
+        #mutate(log2fc = log2(group1 / group2))
       View(aggr_exp)
     }
     return(NULL)
