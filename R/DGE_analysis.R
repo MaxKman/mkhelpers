@@ -69,7 +69,7 @@
 #'                          cell_name_col = cell_name,
 #'                          exp_percentage = 1)
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
@@ -190,6 +190,17 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
       greater_zero[greater_zero > aggr_counts_non_zero_percentage / 100] %>% names
     }) %>% purrr::reduce(intersect)
     x <- x[genes_select_greater_zero,]
+
+    # Calculating log2fc and applying cutoff
+    if(lfc_threshold > 0) {
+      aggr_exp <- map_dfr(colnames(x), function(sample_x) {
+        cells_aggr <- md %>% filter({{sample_col}} == sample_x, {{cluster_col}} == name_x) %>% pull({{cell_name_col}})
+         <- m_norm[rownames(m_norm) %in% rownames(x), colnames(m_norm) %in% cells_aggr]
+        tibble(gene = rownames(m_norm), exp =  Matrix::rowMeans (m_norm_sub), sample = sample_x)
+      })
+      View(aggr_exp)
+      return(NULL)
+    }
 
     print(str_c("Cluster ", name_x, ": Performing DGE analysis on ", nrow(x), " genes!"))
 
