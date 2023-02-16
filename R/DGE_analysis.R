@@ -200,11 +200,15 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
           left_join(md_persample %>% select({{sample_col}}, {{group_col}}))
       }) %>%
         summarise(mean_exp = mean(exp), .by = c(gene, {{group_col}})) %>%
-        pivot_wider(names_from = {{group_col}}, values_from = mean_exp) #%>%
-        #mutate(log2fc = log2(group1 / group2))
-      View(aggr_exp)
+        pivot_wider(names_from = {{group_col}}, values_from = mean_exp)
+
+      log2fc <- aggr_exp %>%
+        mutate(log2fc = log2(!!sym(group2) / !!sym(group2))) %>%
+        filter() %>%
+        filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
+      View(log2fc)
+      x <- x[rownames(x) %in% log2fc$gene %>% unique,]
     }
-    return(NULL)
 
     print(str_c("Cluster ", name_x, ": Performing DGE analysis on ", nrow(x), " genes!"))
 
