@@ -203,10 +203,10 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
         pivot_wider(names_from = {{group_col}}, values_from = mean_exp)
 
       log2fc <- aggr_exp %>%
-        mutate(log2fc = log2(!!sym(group2) / !!sym(group2))) %>%
-        filter() %>%
-        filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
+        mutate(log2fc = log2(!!sym(group2) / !!sym(group2)))
       View(log2fc)
+      log2fc <- log2fc %>%
+        filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
       x <- x[rownames(x) %in% log2fc$gene %>% unique,]
     }
 
