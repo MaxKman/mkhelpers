@@ -207,7 +207,10 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
       log2fc <- log2fc %>%
         filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
       View(log2fc)
-      x <- x[rownames(x) %in% log2fc$gene %>% unique,]
+      genes_log2fc <- log2fc %>% pull(gene) %>% unique
+      print(genes_log2fc)
+      x <- x[rownames(x) %in% genes_log2fc,,drop=FALSE]
+      print(nrow(x))
     }
 
     if(nrow(x) == 0) {
