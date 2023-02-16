@@ -7,6 +7,7 @@
 DGE_analysis(
   m,
   md,
+  m_norm,
   cluster_col,
   sample_col,
   group_col,
