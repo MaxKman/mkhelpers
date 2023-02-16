@@ -19,6 +19,7 @@
 #' @param exp_percentage_strict If set to TRUE, only those genes will be included in the DGE analysis, which are expressed in exp_percentage cells in each sample in a cluster from one group. If set to FALSE the inclusion criterion is an average expression in exp_percentage cells across samples (default: FALSE)
 #' @param exp_percentage_type Whether to select genes, which meet the exp_percentage criterion in both groups ('intersect') or in one or both groups ('union'). Default: 'intersect'.
 #' @param aggr_counts_non_zero_percentage This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.
+#' @param lfc_treshold Log2 fold change treshold passed to DESeq2. See ?DESeq2::results.
 #' @param save_results Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)
 #' @param save_raw_deseq_objs Save raw DEseq 2 objects, to allow for costum contrast extraction
 #' @param savepath Path where the results of the analysis should be saved
@@ -68,7 +69,7 @@
 #'                          cell_name_col = cell_name,
 #'                          exp_percentage = 1)
 #'  }
-DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
@@ -205,7 +206,7 @@ DGE_analysis <- function(m, md, cluster_col, sample_col, group_col, batch_col = 
       dir.create(str_c(savepath, "/deseq2_objects"), showWarnings = FALSE)
       saveRDS(DEG, str_c(savepath, "/deseq2_objects/", "/DGE_", n_cells_normalize, "_cells_", title, "_", name_x, ".RDS"))
     }
-    res <- DESeq2::results(DEG, pAdjustMethod = "fdr") %>% as.data.frame() %>% mutate(gene = rownames(.))
+    res <- DESeq2::results(DEG, pAdjustMethod = "fdr", lfcThreshold = lfc_treshold) %>% as.data.frame() %>% mutate(gene = rownames(.))
     return(res)
   }))
 

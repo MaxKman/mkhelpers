@@ -25,6 +25,7 @@ DGE_analysis(
   exp_percentage_strict = FALSE,
   exp_percentage_type = c("intersect", "union"),
   aggr_counts_non_zero_percentage = 90,
+  lfc_threshold = 0,
   save_results = FALSE,
   save_raw_deseq_objs = FALSE,
   savepath = "../../RDS/DGE"
@@ -76,6 +77,8 @@ DGE_analysis(
 \item{save_raw_deseq_objs}{Save raw DEseq 2 objects, to allow for costum contrast extraction}
 
 \item{savepath}{Path where the results of the analysis should be saved}
+
+\item{lfc_treshold}{Log2 fold change treshold passed to DESeq2. See ?DESeq2::results.}
 }
 \value{
 A dataframe with the DEseq2 results with an additional column indicating the cluster
