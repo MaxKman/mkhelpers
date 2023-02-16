@@ -72,13 +72,13 @@ DGE_analysis(
 
 \item{aggr_counts_non_zero_percentage}{This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.}
 
+\item{lfc_threshold}{Log2 fold change treshold passed to DESeq2. See ?DESeq2::results.}
+
 \item{save_results}{Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)}
 
 \item{save_raw_deseq_objs}{Save raw DEseq 2 objects, to allow for costum contrast extraction}
 
 \item{savepath}{Path where the results of the analysis should be saved}
-
-\item{lfc_treshold}{Log2 fold change treshold passed to DESeq2. See ?DESeq2::results.}
 }
 \value{
 A dataframe with the DEseq2 results with an additional column indicating the cluster
