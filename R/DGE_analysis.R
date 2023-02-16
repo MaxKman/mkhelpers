@@ -204,9 +204,9 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
 
       log2fc <- aggr_exp %>%
         mutate(log2fc = log2(!!sym(group2) / !!sym(group1)))
-      View(log2fc)
       log2fc <- log2fc %>%
         filter(is.finite(log2fc) & (abs(log2fc) >= lfc_threshold))
+      View(log2fc)
       x <- x[rownames(x) %in% log2fc$gene %>% unique,]
     }
 
@@ -230,7 +230,7 @@ DGE_analysis <- function(m, md, m_norm, cluster_col, sample_col, group_col, batc
       dir.create(str_c(savepath, "/deseq2_objects"), showWarnings = FALSE)
       saveRDS(DEG, str_c(savepath, "/deseq2_objects/", "/DGE_", n_cells_normalize, "_cells_", title, "_", name_x, ".RDS"))
     }
-    res <- DESeq2::results(DEG, pAdjustMethod = "fdr", lfcThreshold = lfc_threshold) %>%
+    res <- DESeq2::results(DEG, pAdjustMethod = "fdr") %>%
       as.data.frame() %>%
       mutate(gene = rownames(.)) %>%
       mutate({{ cluster_col }} := name_x)
