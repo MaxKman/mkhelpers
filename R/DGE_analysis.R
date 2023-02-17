@@ -216,7 +216,7 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
     }
 
     if(nrow(x) <= 100) {
-      print(str_c("Cluster ", name_x, ": Less then 100 genes left after applying filtering criteria, not proceeding to DGE analysis."))
+      print(str_c("Cluster ", name_x, ": Less than 100 genes left after applying filtering criteria, not proceeding to DGE analysis."))
       return(NULL)
     }
 
