@@ -20,7 +20,7 @@
 #' @param exp_percentage Minimum percentage of cells in a cluster from one group, which need to express a gene for it to be included in the DGE analysis
 #' @param exp_percentage_strict If set to TRUE, only those genes will be included in the DGE analysis, which are expressed in exp_percentage cells in each sample in a cluster from one group. If set to FALSE the inclusion criterion is an average expression in exp_percentage cells across samples (default: FALSE)
 #' @param exp_percentage_type Whether to select genes, which meet the exp_percentage criterion in both groups ('intersect') or in one or both groups ('union'). Default: 'intersect'.
-#' @param aggr_counts_non_zero_percentage This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.
+#' @param aggr_counts_non_zero_percentage This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90.
 #' @param lfc_threshold Minimum log2 fold change threshold required for differential gene expression testing. A normalized expression matrix needs to be provided (m_norm). Fold changes are calculated between the first two groups.
 #' @param save_results Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)
 #' @param save_raw_deseq_objs Save raw DEseq 2 objects, to allow for costum contrast extraction
@@ -78,7 +78,7 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
   md_persample <- md %>% select({{sample_col}}, {{group_col}}, {{add_var}}, {{batch_col}}) %>% distinct() %>% ungroup %>% as.data.frame()
   rownames(md_persample) <- md_persample %>% pull({{sample_col}})
 
-  group_samples <- map_chr(groups, function(group_x) {
+  group_samples <- map(groups, function(group_x) {
     md %>% filter({{group_col}} == group_x) %>% pull({{sample_col}}) %>% unique
   })
   names(group_samples) <- groups
@@ -120,11 +120,10 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
 
   # Remove clusters, for which less than min_n_samples_group samples remain in a group
   for (k in seq_along(cells_cluster_sample)) {
-    insufficient_cells <- map(group_samples, function(group_samples_x) {
+    insufficient_cells <- map_lgl(group_samples, function(group_samples_x) {
       n_enough <- names(cells_cluster_sample[[k]]) %in% group_samples_x %>% sum
       n_enough < min_n_samples_group
     })
-
     if(any(insufficient_cells)) {cells_cluster_sample[[k]] <- NA}
   }
 
@@ -193,7 +192,7 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
 
     # Select genes, whose aggregated counts are non-zero in > x% of samples
     genes_select_greater_zero <- map(group_samples, function(group_samples_x) {
-      greater_zero <- (x[,colnames(x) %in% group_samples] > 0) %>% as.matrix()
+      greater_zero <- (x[,colnames(x) %in% group_samples_x] > 0) %>% as.matrix()
       greater_zero <- rowSums(greater_zero) / ncol(greater_zero)
       greater_zero[greater_zero > aggr_counts_non_zero_percentage / 100] %>% names
     }) %>% purrr::reduce(intersect)
@@ -284,3 +283,4 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
   }
   return(results)
 }
+

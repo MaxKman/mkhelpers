@@ -76,7 +76,7 @@ DGE_analysis(
 
 \item{exp_percentage_type}{Whether to select genes, which meet the exp_percentage criterion in both groups ('intersect') or in one or both groups ('union'). Default: 'intersect'.}
 
-\item{aggr_counts_non_zero_percentage}{This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.}
+\item{aggr_counts_non_zero_percentage}{This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90.}
 
 \item{lfc_threshold}{Minimum log2 fold change threshold required for differential gene expression testing. A normalized expression matrix needs to be provided (m_norm). Fold changes are calculated between the first two groups.}
 
