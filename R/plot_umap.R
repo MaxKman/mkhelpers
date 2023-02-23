@@ -130,6 +130,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
 
         # Label the clusters
         p <- p + ggrepel::geom_text_repel(data = label_df, aes(label = {{feature_x}}), size = label_size, color = "black", min.segment.length = 0, segment.size = 0.2, box.padding = 0.3, max.overlaps = nrow(tbl_x)*0.5, max.time = 10, max.iter = 1000000, force = 1)
+
       } else if(show_labels) {
         label_df <- tbl_x %>% select({{umap_dim_col_1}}, {{umap_dim_col_2}}, {{feature_x}}) %>%
           group_by({{feature_x}}) %>%

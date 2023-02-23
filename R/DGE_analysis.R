@@ -12,6 +12,8 @@
 #' @param group1 The name of group 1 in group_col
 #' @param group2 The name of group 2 in group_col
 #' @param design The DEseq2 design formula to be used
+#' @param LRT Whether to let DEseq2 perform a likelihood ratio test instead of a Wald test. Default: False
+#' @param reduced_design Reduced model to test against when LRT is set to true
 #' @param n_cells_normalize The number of cells to which the pseudobulking will be standardized. E.g. if set to 10000, the counts aggregated from a cluster/sample combination will be normalized as follows: count_matrix / n_cells * n_cells_normalize.
 #' @param n_cells_min The minimum number of cells for a cluster/sample combination to be included in the analysis. E.g. if set to 20, samples will be excluded for clusters, for which they contain less than 20 cells
 #' @param min_n_samples_group Minimum number of samples in each group to perform DGE analysis. E.g. if set to 3 only 3 versus 3 comparisons will be carried out.
@@ -70,7 +72,7 @@
 #'                          cell_name_col = cell_name,
 #'                          exp_percentage = 1)
 #'  }
-DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
+DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_col, batch_col = NULL, balance_batches = FALSE, add_var = NULL, title, group1, group2, design = ~group, LRT = FALSE, reduced_design = ~1, n_cells_normalize, n_cells_min, min_n_samples_group, cell_name_col = cell_name, exp_percentage = 5, exp_percentage_strict = FALSE, exp_percentage_type = c('intersect', 'union'), aggr_counts_non_zero_percentage = 90, lfc_threshold = 0, save_results = FALSE, save_raw_deseq_objs = FALSE, savepath = "../../RDS/DGE") {
   sample_col_str <- deparse(substitute(sample_col))
   md <- md %>% mutate({{group_col}} := factor({{group_col}}, levels = c(group1, group2)))
 
@@ -230,7 +232,11 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
                                   colData = cData,
                                   design = design)
 
-    DEG <- DESeq2::DESeq(DEG)
+    if(LRT) {
+      DEG <- DESeq2::DESeq(DEG, test = "LRT", reduced = reduced_design)
+    } else {
+      DEG <- DESeq2::DESeq(DEG)
+    }
     if(save_raw_deseq_objs) {
       dir.create(str_c(savepath, "/deseq2_objects"), showWarnings = FALSE)
       saveRDS(DEG, str_c(savepath, "/deseq2_objects/", "/DGE_", n_cells_normalize, "_cells_", title, "_", name_x, ".RDS"))

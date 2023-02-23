@@ -18,6 +18,8 @@ DGE_analysis(
   group1,
   group2,
   design = ~group,
+  LRT = FALSE,
+  reduced_design = ~1,
   n_cells_normalize,
   n_cells_min,
   min_n_samples_group,
@@ -58,6 +60,10 @@ DGE_analysis(
 \item{group2}{The name of group 2 in group_col}
 
 \item{design}{The DEseq2 design formula to be used}
+
+\item{LRT}{Whether to let DEseq2 perform a likelihood ratio test instead of a Wald test. Default: False}
+
+\item{reduced_design}{Reduced model to test against when LRT is set to true}
 
 \item{n_cells_normalize}{The number of cells to which the pseudobulking will be standardized. E.g. if set to 10000, the counts aggregated from a cluster/sample combination will be normalized as follows: count_matrix / n_cells * n_cells_normalize.}
 
