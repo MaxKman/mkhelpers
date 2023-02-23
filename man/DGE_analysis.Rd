@@ -15,8 +15,7 @@ DGE_analysis(
   balance_batches = FALSE,
   add_var = NULL,
   title,
-  group1,
-  group2,
+  groups,
   design = ~group,
   LRT = FALSE,
   reduced_design = ~1,
@@ -55,9 +54,7 @@ DGE_analysis(
 
 \item{title}{The title of comparison (will be used for file naming)}
 
-\item{group1}{The name of group 1 in group_col}
-
-\item{group2}{The name of group 2 in group_col}
+\item{groups}{The name of the experimental groups, e.g. c('group_1', 'group2'). The order of groups will be used as factor levels.}
 
 \item{design}{The DEseq2 design formula to be used}
 
@@ -81,7 +78,7 @@ DGE_analysis(
 
 \item{aggr_counts_non_zero_percentage}{This parameter is used to exclude genes from the DGE analysis, for which less than a given percentage of samples have zero expression after count aggregation. This is helpful in stimulation experiments, where some genes are hardly detectable in the unstimulated condition, which can lead to spurious DGE results due to inflated fold changes and low variation. Default: 90%.}
 
-\item{lfc_threshold}{Minimum required log2 fold change threshold required for differential gene expression testing. A normalized expression matrix needs to be provided (m_norm).}
+\item{lfc_threshold}{Minimum log2 fold change threshold required for differential gene expression testing. A normalized expression matrix needs to be provided (m_norm). Fold changes are calculated between the first two groups.}
 
 \item{save_results}{Whether to save results to an RDS file and a log file containing the settings used in this run (default: FALSE)}
 
