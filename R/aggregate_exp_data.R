@@ -47,16 +47,16 @@
 #'
 #' # Test if min_n_samples_aggr is applied correctly
 #' md_modified <- seu_pbmc@meta.data %>% filter(!(seurat_clusters == 1 & simulated_donors %in% 1:3))
-#' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE)
+#' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
 #' test_results$seurat_clusters %>% unique %>% sort
 #'
 #' # Test if n_cells_min is applied correctly
 #' md_modified <- seu_pbmc@meta.data %>% filter(!(seurat_clusters == 1 & simulated_donors %in% 1:3))
 #' md_sample <- seu_pbmc@meta.data %>% filter(seurat_clusters == 1 & simulated_donors %in% 1:3) %>% group_by(seurat_clusters, simulated_donors) %>% slice_sample(n = 19)
 #' md_modified <- bind_rows(md_modified, md_sample)
-#' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE)
+#' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
 #' test_results$seurat_clusters %>% unique %>% sort
-#' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 18, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE)
+#' test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 18, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
 #' test_results$seurat_clusters %>% unique %>% sort
 #'  }
 aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, n_cells_normalize = 0, min_n_samples_aggr, mode = c("mean", "sum"), return_matrix = TRUE, cell_name_col = cell_name, expr_format = c("wide", "long"), subset = "none", subset_col, verbose = TRUE) {
@@ -86,11 +86,7 @@ aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, 
   excluded_groups <- all_groups[!(all_groups %in% included_groups)]
 
   if(verbose) {
-    included_groups_concat <- str_c(included_groups, collapse = ', ')
-    print(included_groups_concat)
-    excluded_groups_concat <- str_c(excluded_groups, collapse = ', ')
-    print(excluded_groups_concat)
-    print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{included_groups_concat}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{excluded_groups_concat}\n\n"))
+    print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{stringr::str_c(included_groups, collapse = ', ')}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{stringr::str_c(excluded_groups, collapse = ', ')}\n\n"))
     }
 
 
