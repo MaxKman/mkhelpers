@@ -85,10 +85,12 @@ aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, 
   included_groups <- group_stats %>% pull({{aggr_col}}) %>% unique
   excluded_groups <- all_groups[!(all_groups %in% included_groups)]
 
-  print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{str_c(included_groups, collapse = ', ')}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{str_c(excluded_groups, collapse = ', ')}\n\n"))
-
   if(verbose) {
-    print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{str_c(included_groups, collapse = ', ')}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{str_c(excluded_groups, collapse = ', ')}\n\n"))
+    included_groups_concat <- str_c(included_groups, collapse = ', ')
+    print(included_groups_concat)
+    excluded_groups_concat <- str_c(excluded_groups, collapse = ', ')
+    print(excluded_groups_concat)
+    print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{included_groups_concat}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{excluded_groups_concat}\n\n"))
     }
 
 
