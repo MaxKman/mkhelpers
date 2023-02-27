@@ -44,11 +44,11 @@ plot_umap(
 
 \item{feature_colors}{Colors to be used for discrete features. Ideally provide as named vector, where the vector names are the feature levels and the values the colors.}
 
-\item{title}{Plot title. Also used for naming the output file.}
+\item{title}{Plot title.}
 
 \item{output}{Return a ggplot object ("plot") or save as a png image ("image").}
 
-\item{output_path}{Output path}
+\item{output_path}{Output path, shold include '.../imagename.png'.}
 
 \item{dpi}{Resolution (dpi) for saved png.}
 

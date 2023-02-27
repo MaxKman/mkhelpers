@@ -6,9 +6,9 @@
 #' @param feature_x Name of column containing feature data
 #' @param quantile_limits Quantile limits applied to continuous feature. E.g. c(0.1, 0.9) applies the dynamic range of the color scale only to to values above the 10th percentile and below the 90th percentile.
 #' @param feature_colors Colors to be used for discrete features. Ideally provide as named vector, where the vector names are the feature levels and the values the colors.
-#' @param title Plot title. Also used for naming the output file.
+#' @param title Plot title.
 #' @param output Return a ggplot object ("plot") or save as a png image ("image").
-#' @param output_path Output path
+#' @param output_path Output path, shold include '.../imagename.png'.
 #' @param dpi Resolution (dpi) for saved png.
 #' @param order_values Whether to plot higher values in front of lower values ("sorted") or in random order ("random").
 #' @param invert_sort_direction Whether to invert sort direction (plot lower values in front)
@@ -152,7 +152,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   }
 
   if(output[[1]] == "image") {
-    png_save_show(p, glue::glue("{output_path}/{title}.png", width = out_width, height = out_height), dpi = dpi, limitsize = FALSE)
+    png_save_show(p, glue::glue("{output_path}", width = out_width, height = out_height), dpi = dpi, limitsize = FALSE)
   } else if (output[[1]] == "plot") {
     return(p)
   }
