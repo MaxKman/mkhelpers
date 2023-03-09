@@ -5,7 +5,7 @@
 #' @param umap_dim_col_2 Name of column containing umap dimension 2
 #' @param feature_x Name of column containing feature data
 #' @param quantile_limits Quantile limits applied to continuous feature. E.g. c(0.1, 0.9) applies the dynamic range of the color scale only to to values above the 10th percentile and below the 90th percentile.
-#' @param feature_colors Colors to be used for discrete features. Ideally provide as named vector, where the vector names are the feature levels and the values the colors.
+#' @param feature_colors For discrete features a color vector with one color per feature needs to be provided. A fixed assignment of colors to classes can be achieved by providing a named vector, where the vector names are the feature levels and the values the colors. For continous features provide either a vector of two or three colors to build a color gradient or leave this parameter empty to use the Cividis scale.
 #' @param title Plot title.
 #' @param output Return a ggplot object ("plot") or save as a png image ("image").
 #' @param output_path Output path, shold include '.../imagename.png'.
@@ -69,8 +69,22 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   if(mode == "continuous") {
     feature_x_cutoffs <- tbl_x %>% mutate({{feature_x}} := na_if({{feature_x}}, 0)) %>% pull({{feature_x}}) %>% quantile(quantile_limits, na.rm = TRUE) #zero values are not taken into account when determining the cutoff
     p <- p +
-      guides(color = guide_colourbar(barwidth = unit(0.9*plot_width, "mm"), barheight = unit(0.025*plot_width, "mm"), title.position = "top", title.hjust = 0.5)) +
-      viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
+      guides(color = guide_colourbar(barwidth = unit(0.9*plot_width, "mm"), barheight = unit(0.025*plot_width, "mm"), title.position = "top", title.hjust = 0.5))
+    if(is.null(feature_colors)) {
+      p <- p +
+        viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
+    } else if (length(feature_colors) == 1) {
+      print("Only a single color provided, defaulting to Cividis scale")
+      p <- p +
+        viridis::scale_color_viridis(limits = feature_x_cutoffs, oob=scales::squish, option = "cividis")
+    }
+    else if (length(feature_colors) == 2) {
+      p <- p +
+        scale_color_gradient(low = feature_colors[[1]], high = feature_colors[[2]], limits = feature_x_cutoffs, oob=scales::squish)
+    } else {
+      p <- p +
+        scale_color_gradient2(low = feature_colors[[1]], mid = feature_colors[[2]], high = feature_colors[[3]], limits = feature_x_cutoffs, oob=scales::squish)
+    }
   }
 
   if(mode == "discrete") {

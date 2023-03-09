@@ -42,7 +42,7 @@ plot_umap(
 
 \item{quantile_limits}{Quantile limits applied to continuous feature. E.g. c(0.1, 0.9) applies the dynamic range of the color scale only to to values above the 10th percentile and below the 90th percentile.}
 
-\item{feature_colors}{Colors to be used for discrete features. Ideally provide as named vector, where the vector names are the feature levels and the values the colors.}
+\item{feature_colors}{For discrete features a color vector with one color per feature needs to be provided. A fixed assignment of colors to classes can be achieved by providing a named vector, where the vector names are the feature levels and the values the colors. For continous features provide either a vector of two or three colors to build a color gradient or leave this parameter empty to use the Cividis scale.}
 
 \item{title}{Plot title.}
 
