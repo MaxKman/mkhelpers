@@ -13,7 +13,8 @@ geneset_enrichment(
   saved_rankings = "none",
   rankings_object = NULL,
   aucMaxRank_perc = 20,
-  expr_format = c("wide", "long")
+  expr_format = c("wide", "long"),
+  min_n_genes_detected = 0
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ geneset_enrichment(
 \item{aucMaxRank_perc}{Cutoff percentage of top genes in the ranking considered for gene set enrichment analysis}
 
 \item{expr_format}{Return gene expression information in wide or long format (default: "wide")}
+
+\item{min_n_genes_detected}{A minimum number of genes found in the expression data for inclusion of a geneset. This only considers whether a gene is reported in the expression matrix and filtering such as removing genes with all zeroes needs to be performed beforehand.}
 }
 \value{
 

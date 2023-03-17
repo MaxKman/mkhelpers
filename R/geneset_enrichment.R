@@ -9,6 +9,7 @@
 #' @param rankings_object The rankings can also be directly loaded from an object in the current environment provided here
 #' @param aucMaxRank_perc Cutoff percentage of top genes in the ranking considered for gene set enrichment analysis
 #' @param expr_format Return gene expression information in wide or long format (default: "wide")
+#' @param min_n_genes_detected A minimum number of genes found in the expression data for inclusion of a geneset. This only considers whether a gene is reported in the expression matrix and filtering such as removing genes with all zeroes needs to be performed beforehand.
 #'
 #' @return
 #' @export
@@ -39,8 +40,27 @@
 #' tbl_x_long <- tbl_x %>% pivot_longer(all_of(names(celltype_markers)), names_to = "geneset", values_to = "AUC")
 #' plot_feature_comparison_grid(tbl_x = tbl_x_long, feature_list = names(celltype_markers), feature_col = "geneset", output_path = "~/test_plot_geneset_enrichment_boxplot.png", expr_col = "AUC", group_col = "seurat_clusters", n_cols = 3, plot_width = 40, plot_height = 30, point_size = 0.5)
 #' }
-geneset_enrichment <- function(m, geneset_list, chunk_data = FALSE, chunk_size = 10000, rankings_save_path, saved_rankings = "none", rankings_object = NULL, aucMaxRank_perc = 20, expr_format = c("wide", "long")) {
+geneset_enrichment <- function(m, geneset_list, chunk_data = FALSE, chunk_size = 10000, rankings_save_path, saved_rankings = "none", rankings_object = NULL, aucMaxRank_perc = 20, expr_format = c("wide", "long"), min_n_genes_detected = 0) {
   set.seed(123)
+
+  # Apply cutoff for number of detected genes
+  if(min_n_genes_detected > 0) {
+    genesets_keep <- imap_chr(geneset_list, function(genes_x, name_x) {
+      n_genes_detected <- (rownames(m) %in% genes_x) %>% sum()
+      if(n_genes_detected >= min_n_genes_detected) {
+        return(name_x)
+      }
+      return(NA)
+    }) %>% rm_na()
+
+    geneset_list <- geneset_list[genesets_keep]
+
+    if(length(geneset_list) == 0) {
+      print("No genesets left for testing after applying min_n_genes_detected")
+      return(NA)
+    }
+  }
+
   if(!chunk_data) {
     if(saved_rankings == "none" & is.null(rankings_object)) {
       print("...building rankings...")
