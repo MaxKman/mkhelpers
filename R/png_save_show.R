@@ -17,7 +17,7 @@ png_save_show <- function(plot, file, show_plot = TRUE, ...) {
   bro::bro_ggsave_paged(gg = plot,
                         filename = file,
                         units = "mm",
-                        limitsize = TRUE,
+                        limitsize = FALSE,
                         ...)
   if(show_plot) {
     knitr::include_graphics(file)
