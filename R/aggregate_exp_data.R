@@ -86,7 +86,7 @@ aggregate_exp_data <- function(m, md, aggr_col, sample_col = none, n_cells_min, 
   excluded_groups <- all_groups[!(all_groups %in% included_groups)]
 
   if(verbose) {
-    print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{stringr::str_c(included_groups, collapse = ', ')}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{stringr::str_c(excluded_groups, collapse = ', ')}\n\n"))
+    print(glue::glue("The following aggregation groups have sufficient cells and samples to be aggregated:\n{included_groups %>% stringr::str_replace_na() %>% stringr::str_c(collapse = ', ')}\n\nThe following aggregation groups are excluded as they contain less than {min_n_samples_aggr} samples with >= {n_cells_min} cells:\n{stringr::str_c(excluded_groups, collapse = ', ')}\n\n"))
     }
 
 
