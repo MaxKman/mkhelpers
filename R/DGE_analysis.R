@@ -153,9 +153,9 @@ DGE_analysis <- function(m, md, m_norm = NULL, cluster_col, sample_col, group_co
         sample_genes[names(sample_genes) %in% group_samples_x] %>% purrr::reduce(intersect)
       })
       if(exp_percentage_type[[1]] == 'union') {
-        genes_select <- sample_genes %>% purrr:reduce(union)
+        genes_select <- sample_genes %>% purrr::reduce(union)
       } else {
-        genes_select <- sample_genes %>% purrr:reduce(intersect)
+        genes_select <- sample_genes %>% purrr::reduce(intersect)
       }
     } else {
       # Subset on genes, which are on average expressed in exp_percentage cells in each group
