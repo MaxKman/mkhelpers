@@ -166,7 +166,7 @@ plot_umap <- function(tbl_x, umap_dim_col_1, umap_dim_col_2, feature_x, quantile
   }
 
   if(output[[1]] == "image") {
-    png_save_show(p, glue::glue("{output_path}", width = out_width, height = out_height), dpi = dpi, limitsize = FALSE)
+    png_save_show(p, glue::glue("{output_path}", width = out_width, height = out_height), dpi = dpi)
   } else if (output[[1]] == "plot") {
     return(p)
   }
