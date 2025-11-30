@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' p <- ggplot(mtcars, aes(mpg, cyl)) +
 #'   geom_point()
 #'   png_save_show(p, "~/mtcars.png", width = 89, height = 89)

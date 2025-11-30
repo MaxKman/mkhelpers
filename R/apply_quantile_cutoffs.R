@@ -10,6 +10,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' mtcars$disp %>% sort
 #' apply_quantile_cutoffs(mtcars$disp) %>% sort
 apply_quantile_cutoffs <- function(x, quantiles = c(0.1, 0.9)) {

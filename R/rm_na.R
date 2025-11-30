@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' x <- c("something", "something else", NA, "and another thing", NA)
 #' rm_na(x)
 rm_na <- function(x) {

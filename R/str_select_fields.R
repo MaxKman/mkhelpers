@@ -11,6 +11,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' x <- "apple-banana-pear-mango-peach"
 #' str_select_fields(x, "-", c(1,5))
 str_select_fields <- function(x, sep, fields, leading_sep = FALSE, trailing_sep = FALSE) {

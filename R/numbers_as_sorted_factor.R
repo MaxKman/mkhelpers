@@ -7,6 +7,7 @@
 #'
 #' @examples
 #' \dontrun{
+#' library(mkhelpers)
 #' x <- factor(c("1", "2", "3", "10", "4", "10"))
 #' levels(x)
 #' numbers_as_sorted_factor(x)

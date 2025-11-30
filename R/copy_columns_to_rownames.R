@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' car_df <- mtcars %>% rownames_to_column("car_name")
 #' car_df <- car_df %>% copy_column_to_rownames("car_name")
 copy_column_to_rownames <- function(df_x, col_name) {

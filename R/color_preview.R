@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' color_preview(c("#E04B4B", "#EC9393", "#3B537F", "#8998B2", "#969696", "#F2BF44"))
 color_preview <- function(color_vector) {
   names(color_vector) <- color_vector

@@ -23,6 +23,7 @@
 #' @examples
 #' \dontrun{
 #' # In this example we identify markers for different clusters in single cell PBMC data
+#' library(mkhelpers)
 #' library(Seurat)
 #' library(SeuratData)
 #' InstallData("pbmc3k")

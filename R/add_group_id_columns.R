@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' library(Seurat)
 #' library(SeuratData)
 #' InstallData("pbmc3k")

@@ -9,6 +9,7 @@
 #'
 #' @examples
 #' \dontrun{
+#' library(mkhelpers)
 #' library(Seurat)
 #' library(SeuratData)
 #' InstallData("pbmc3k")

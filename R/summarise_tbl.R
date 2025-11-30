@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' summarise_tbl(mtcars)
 summarise_tbl <- function(tbl_x) {
   list_cols <- tbl_x %>% select(where(is.list)) %>% colnames()

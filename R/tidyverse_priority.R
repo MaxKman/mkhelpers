@@ -4,6 +4,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' library(tidyverse)
 #' library(GenomicRanges)
 #' tidyverse_priority()

@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' tbl_add_percentiles(mtcars, disp)
 tbl_add_percentiles <- function(tbl_x, var_x) {
   tbl_x %>%

@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @examples
+#' library(mkhelpers)
 #' char_vector <- purrr::map_chr(49:122, intToUtf8)
 #' make_chunks(char_vector, n_chunks = 5)
 #' make_chunks(char_vector, size_chunks = 3)
