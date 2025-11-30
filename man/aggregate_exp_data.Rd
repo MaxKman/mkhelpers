@@ -75,26 +75,26 @@ add_donors$cell_name <- rownames(add_donors)
 seu_pbmc <- AddMetaData(seu_pbmc, add_donors)
 
 # Basic example with mode = "mean"
-aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean")
+aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean")
 
 # Basic example with mode = "count"
-aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count")
+aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count")
 
 # Basic example with mode = "count", return dataframe
-aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE)
+aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE)
 
 # Test if min_n_samples_aggr is applied correctly
 md_modified <- seu_pbmc@meta.data \%>\% filter(!(seurat_clusters == 1 & simulated_donors \%in\% 1:3))
-test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
+test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
 test_results$seurat_clusters \%>\% unique \%>\% sort
 
 # Test if n_cells_min is applied correctly
 md_modified <- seu_pbmc@meta.data \%>\% filter(!(seurat_clusters == 1 & simulated_donors \%in\% 1:3))
 md_sample <- seu_pbmc@meta.data \%>\% filter(seurat_clusters == 1 & simulated_donors \%in\% 1:3) \%>\% group_by(seurat_clusters, simulated_donors) \%>\% slice_sample(n = 19)
 md_modified <- bind_rows(md_modified, md_sample)
-test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
+test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
 test_results$seurat_clusters \%>\% unique \%>\% sort
-test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 18, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
+test_results <- aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = md_modified, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 18, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count", return_matrix = FALSE, expr_format = "long")
 test_results$seurat_clusters \%>\% unique \%>\% sort
  }
 }

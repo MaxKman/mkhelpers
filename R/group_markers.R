@@ -40,7 +40,7 @@
 #' seu_pbmc <- AddMetaData(seu_pbmc, add_donors)
 #'
 #' # Make pseudobulks
-#' m_aggr <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count")
+#' m_aggr <- aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count")
 #'
 #' # Identify markers
 #' group_markers(m = m_aggr, output_path = "~")
@@ -56,7 +56,7 @@
 #'   slot_extract = "data",
 #'   expr_format = "wide")
 #' plot_umap_grid(tbl_x = tbl_x, umap_dim_col_1 = UMAP_1, umap_dim_col_2 = UMAP_2, output_path = "~/test_plot_cluster_markers_umap.png", feature_list = c("seurat_clusters", genes_plot), show_labels = TRUE, point_size = 0.7)
-#' m_aggr_df <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean", return_matrix = FALSE, expr_format = "long")
+#' m_aggr_df <- aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, min_n_samples_aggr = 3, mode = "mean", return_matrix = FALSE, expr_format = "long")
 #' plot_feature_comparison_grid(tbl_x = m_aggr_df, feature_list = genes_plot, output_path = "~/test_plot_cluster_markers_boxplot.png", expr_col = "exp", group_col = "seurat_clusters", n_cols = 5)
 #' }
 group_markers <- function(m, auto_extract_groups_samples = TRUE, groups, samples, max_padj = 0.1, min_log2f = 1, log2f_dist = 2, max_n_markers = 0, marker_direction = c("positive", "negative"), n_workers = 4, output_path, previous_output = NULL) {

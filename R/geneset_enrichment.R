@@ -26,7 +26,7 @@
 #'   nk_cells = c("GNLY", "PRF1", "APMAP", "FGFBP2", "GZMB", "C5orf56", "AKR1C3", "SPON2", "TTC38", "IL2RB"),
 #'   monocytes = c("LYZ", "S100A9", "GSTP1", "S100A8", "GPX1", "GRN", "CEBPD", "CAPG", "NFKBIA", "MIR24-2")
 #'   )
-#' results <- geneset_enrichment(m = seu_pbmc@assays$RNA@data, geneset_list = celltype_markers, chunk_data = FALSE, rankings_save_path = "~/saved_rankings.rds")
+#' results <- geneset_enrichment(m = seu_pbmc@assays$RNA$data, geneset_list = celltype_markers, chunk_data = FALSE, rankings_save_path = "~/saved_rankings.rds")
 #'
 #' # Plot results
 #' tbl_x <- seu_extract_tbl(seu_x = seu_pbmc,
@@ -77,7 +77,7 @@ geneset_enrichment <- function(m, geneset_list, chunk_data = FALSE, chunk_size =
     print("...calculating AUC...")
     AUC <- AUCell::AUCell_calcAUC(geneSets = geneset_list, rankings = AU_rankings, aucMaxRank=nrow(m)*aucMaxRank_perc/100)
     print("done!")
-    AUC_results <- AUC@assays@data$AUC %>% t %>% as.data.frame %>% rownames_to_column("sample") %>% as_tibble()
+    AUC_results <- AUC@assays$data$AUC %>% t %>% as.data.frame %>% rownames_to_column("sample") %>% as_tibble()
   } else {
     if(saved_rankings == "none" & is.null(rankings_object)) {
       #Make chunks
@@ -104,7 +104,7 @@ geneset_enrichment <- function(m, geneset_list, chunk_data = FALSE, chunk_size =
     print("...calculating AUC...")
     AUC_results <- map(AU_rankings_list, function(ranking_x) {
       AUC <- AUCell::AUCell_calcAUC(geneSets = geneset_list, rankings = ranking_x, aucMaxRank=nrow(m)*aucMaxRank_perc/100)
-      AUC@assays@data$AUC %>% t %>% as.data.frame %>% rownames_to_column("sample") %>% as_tibble()
+      AUC@assays$data$AUC %>% t %>% as.data.frame %>% rownames_to_column("sample") %>% as_tibble()
     })
     AUC_results <- bind_rows(AUC_results)
     print("done!")

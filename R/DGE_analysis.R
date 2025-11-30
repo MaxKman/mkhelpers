@@ -54,7 +54,7 @@
 #' donor_remove <- pbmc_ifnb@meta.data$simulated_donors %>% unique %>% .[[1]]
 #' pbmc_ifnb <- subset(pbmc_ifnb, simulated_donors != donor_remove)
 #'
-#' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA@counts,
+#' test_dge <- DGE_analysis(m = pbmc_ifnb@assays$RNA$counts,
 #'                          md = pbmc_ifnb@meta.data,
 #'                          title = "testrun",
 #'                          cluster_col = seurat_annotations,

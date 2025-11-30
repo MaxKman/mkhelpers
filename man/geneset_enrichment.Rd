@@ -56,7 +56,7 @@ celltype_markers <- list(
   nk_cells = c("GNLY", "PRF1", "APMAP", "FGFBP2", "GZMB", "C5orf56", "AKR1C3", "SPON2", "TTC38", "IL2RB"),
   monocytes = c("LYZ", "S100A9", "GSTP1", "S100A8", "GPX1", "GRN", "CEBPD", "CAPG", "NFKBIA", "MIR24-2")
   )
-results <- geneset_enrichment(m = seu_pbmc@assays$RNA@data, geneset_list = celltype_markers, chunk_data = FALSE, rankings_save_path = "~/saved_rankings.rds")
+results <- geneset_enrichment(m = seu_pbmc@assays$RNA$data, geneset_list = celltype_markers, chunk_data = FALSE, rankings_save_path = "~/saved_rankings.rds")
 
 # Plot results
 tbl_x <- seu_extract_tbl(seu_x = seu_pbmc,

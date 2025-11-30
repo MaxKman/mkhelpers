@@ -13,7 +13,7 @@
 #' library(SeuratData)
 #' InstallData("pbmc3k")
 #' seu_pbmc <- LoadData("pbmc3k", "pbmc3k.final")
-#' filter_genes(m = pbmc3k@assays$RNA@counts, min_perc_exp = 5)
+#' filter_genes(m = pbmc3k@assays$RNA$counts, min_perc_exp = 5)
 #' }
 filter_genes <- function(m, min_perc_exp, include_genes = "none") {
   m_sub <- m[Matrix::rowSums(m > 0) > ncol(m)*min_perc_exp/100,]
