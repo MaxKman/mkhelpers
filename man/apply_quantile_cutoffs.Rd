@@ -22,6 +22,7 @@ Elements in the vector >= the upper cutoff will be set to the upper cutoff.
 All other elements will be left unchanged
 }
 \examples{
+library(mkhelpers)
 mtcars$disp \%>\% sort
 apply_quantile_cutoffs(mtcars$disp) \%>\% sort
 }

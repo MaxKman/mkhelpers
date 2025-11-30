@@ -57,6 +57,7 @@ This function tries to identify marker genes for each group defined in the provi
 \examples{
 \dontrun{
 # In this example we identify markers for different clusters in single cell PBMC data
+library(mkhelpers)
 library(Seurat)
 library(SeuratData)
 InstallData("pbmc3k")

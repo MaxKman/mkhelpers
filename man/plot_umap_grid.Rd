@@ -41,14 +41,12 @@ plot_umap_grid(
 
 \item{...}{Other parameters passed on to plot_umap. Note, that umap_dim_col_1 and umap_dim_col_2 need to be provided.}
 }
-\value{
-
-}
 \description{
 Project a list of discrete or continous features on a umap plot
 }
 \examples{
 \dontrun{
+ library(mkhelpers)
  library(Seurat)
  library(SeuratData)
  InstallData("pbmc3k")

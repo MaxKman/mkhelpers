@@ -20,6 +20,7 @@ A patchwork
 Wrapper for plot_layout with mm as default
 }
 \examples{
+library(mkhelpers)
 library(ggplot2)
 p <- ggplot(mtcars, aes(mpg, cyl)) + geom_point()
 p + plot_layout_mm(30, 30)

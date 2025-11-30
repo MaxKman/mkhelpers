@@ -13,13 +13,11 @@ add_group_id_columns(tbl_x, cell_name_col, group_col)
 
 \item{group_col}{The column identifying group membership}
 }
-\value{
-
-}
 \description{
 This function is mainly designed to support plotting of cell membership for individual groups, for example individual clusters
 }
 \examples{
+library(mkhelpers)
 library(Seurat)
 library(SeuratData)
 InstallData("pbmc3k")

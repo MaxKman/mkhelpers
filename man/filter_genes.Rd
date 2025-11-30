@@ -21,6 +21,7 @@ Title Filter on genes expressed in more than n samples (e.g. cells)
 }
 \examples{
 \dontrun{
+library(mkhelpers)
 library(Seurat)
 library(SeuratData)
 InstallData("pbmc3k")

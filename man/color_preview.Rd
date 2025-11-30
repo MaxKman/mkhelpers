@@ -9,12 +9,10 @@ color_preview(color_vector)
 \arguments{
 \item{color_vector}{A hexadecimal color vector to plot}
 }
-\value{
-
-}
 \description{
 Previews a vector of hexadecimal colors
 }
 \examples{
+library(mkhelpers)
 color_preview(c("#E04B4B", "#EC9393", "#3B537F", "#8998B2", "#969696", "#F2BF44"))
 }

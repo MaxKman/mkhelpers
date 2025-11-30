@@ -18,5 +18,6 @@ A tibble
 Adds a new column to the tibble, which shows the percentiles for a column of choice
 }
 \examples{
+library(mkhelpers)
 tbl_add_percentiles(mtcars, disp)
 }

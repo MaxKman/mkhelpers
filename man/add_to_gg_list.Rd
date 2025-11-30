@@ -13,9 +13,6 @@ add_to_gg_list(gg_list, arguments_add, subset = NULL)
 
 \item{subset}{Define a subset of the list to add the layers to, eg. 1:3, or c(1,5,7)}
 }
-\value{
-
-}
 \description{
 Add additional ggplot layers to a list of existing ggplot objects
 }

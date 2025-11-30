@@ -24,6 +24,7 @@ A string
 Select fields in a string
 }
 \examples{
+library(mkhelpers)
 x <- "apple-banana-pear-mango-peach"
 str_select_fields(x, "-", c(1,5))
 }

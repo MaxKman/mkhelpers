@@ -38,14 +38,12 @@ geneset_enrichment(
 
 \item{min_n_genes_detected}{A minimum number of genes found in the expression data for inclusion of a geneset. This only considers whether a gene is reported in the expression matrix and filtering such as removing genes with all zeroes needs to be performed beforehand.}
 }
-\value{
-
-}
 \description{
 This is a wrapper for AUCell (see https://bioconductor.org/packages/release/bioc/html/AUCell.html). It first ranks all genes for each individual sample / cell by their expression. In a second step gene set enrichment is determined as described here https://bioconductor.org/packages/release/bioc/vignettes/AUCell/inst/doc/AUCell.html. When rankings have been calculated once for a given data set they don't have to be re-run each time a different gene set with different parameters is tested. Therefore it makes sense to store these rankings and reload them when needed
 }
 \examples{
 \dontrun{
+library(mkhelpers)
 library(Seurat)
 library(SeuratData)
 InstallData("pbmc3k")

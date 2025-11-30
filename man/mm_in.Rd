@@ -9,9 +9,6 @@ mm_in(mm)
 \arguments{
 \item{mm}{}
 }
-\value{
-
-}
 \description{
 Convert mm to inches
 }

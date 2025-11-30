@@ -29,9 +29,6 @@ plot_feature_comparison_grid(
 
 \item{...}{Other parameters passed on to plot_umap. Note, that expr_cola and group_col need to be provided.}
 }
-\value{
-
-}
 \description{
 Compare a list of features across groups and samples with boxplots
 }

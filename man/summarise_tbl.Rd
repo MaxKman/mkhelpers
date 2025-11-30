@@ -16,5 +16,6 @@ A tibble containing the data types of all columns of the input tibble, the numbe
 Summarise the variables of a tibble
 }
 \examples{
+library(mkhelpers)
 summarise_tbl(mtcars)
 }

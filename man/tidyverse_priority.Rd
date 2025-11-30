@@ -6,13 +6,11 @@
 \usage{
 tidyverse_priority()
 }
-\value{
-
-}
 \description{
 Giving all tidyverse functions priority over conflicting functions from other packages
 }
 \examples{
+library(mkhelpers)
 library(tidyverse)
 library(GenomicRanges)
 tidyverse_priority()

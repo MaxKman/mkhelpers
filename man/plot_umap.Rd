@@ -86,6 +86,7 @@ Project discrete or continous features on a umap plot
 }
 \examples{
 \dontrun{
+ library(mkhelpers)
  library(Seurat)
  library(SeuratData)
  InstallData("pbmc3k")

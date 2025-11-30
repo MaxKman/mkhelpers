@@ -58,6 +58,7 @@ This function aggregates single cell data according to a predefined group (see a
 }
 \examples{
 \dontrun{
+library(mkhelpers)
 library(Seurat)
 library(SeuratData)
 InstallData("pbmc3k")

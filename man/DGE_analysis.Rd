@@ -94,6 +94,7 @@ DEseq2 wrapper for pseudobulk differential gene expression analysis in single ce
 }
 \examples{
 \dontrun{
+library(mkhelpers)
 library(Seurat)
 library(SeuratData)
 InstallData("ifnb")

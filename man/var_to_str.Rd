@@ -9,9 +9,6 @@ var_to_str(var_x)
 \arguments{
 \item{var_x}{A variable}
 }
-\value{
-
-}
 \description{
 Extract variable name as string
 }

@@ -18,6 +18,7 @@ A data frame with row names
 Assign the rownames of a data frame to the values in a column without removing the column
 }
 \examples{
+library(mkhelpers)
 car_df <- mtcars \%>\% rownames_to_column("car_name")
 car_df <- car_df \%>\% copy_column_to_rownames("car_name")
 }
