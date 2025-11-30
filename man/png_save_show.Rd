@@ -16,7 +16,7 @@ png_save_show(plot, file, show_plot = TRUE, ...)
 \item{...}{Other parameters to be passed to bro_ggsave_paged}
 }
 \description{
-Wrapper for bro::bro_ggsave_paged with unit set to "mm" and automatic inclusion of the png image in the knitted document
+Wrapper for bro_ggsave_paged with unit set to "mm" and automatic inclusion of the png image in the knitted document
 }
 \examples{
 library(mkhelpers)
