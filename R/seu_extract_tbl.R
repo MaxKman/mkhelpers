@@ -73,8 +73,8 @@ seu_extract_tbl <- function(seu_x, reduction = NULL, metadata_cols = "all", extr
     if(genes_extract[[1]] == "all") {
       genes_extract <- rownames(seu_x)
     }
-    if(all(genes_extract %in% (seu_x@assays[[assay_extract]] %>% slot(slot_extract) %>% rownames))) {
-      m <- seu_x@assays[[assay_extract]] %>% slot(slot_extract)
+    if(all(genes_extract %in% (seu_x@assays[[assay_extract]] %>% LayerData(slot_extract) %>% rownames))) {
+      m <- seu_x@assays[[assay_extract]] %>% LayerData(slot_extract)
       m <- m[rownames(m) %in% genes_extract,]
       if(length(genes_extract) == 1) {
         tbl_temp <- tibble(cell_name = names(m), !!genes_extract := m)
@@ -93,7 +93,7 @@ seu_extract_tbl <- function(seu_x, reduction = NULL, metadata_cols = "all", extr
           append(df_list, .)
       }
     } else {
-        stop(glue::glue("Error: The following genes are not found in the expression data: {genes_extract[!(genes_extract %in% (seu_x@assays[[assay_extract]] %>% slot(slot_extract) %>% rownames))] %>% str_c(collapse = ', ')}\n"))
+        stop(glue::glue("Error: The following genes are not found in the expression data: {genes_extract[!(genes_extract %in% (seu_x@assays[[assay_extract]] %>% LayerData(slot_extract) %>% rownames))] %>% str_c(collapse = ', ')}\n"))
     }
   }
 
