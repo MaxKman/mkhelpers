@@ -41,7 +41,7 @@
 #' seu_pbmc <- AddMetaData(seu_pbmc, add_donors)
 #'
 #' # Make pseudobulks
-#' m_aggr <- aggregate_exp_data(m = seu_pbmc@assays$RNA@data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count")
+#' m_aggr <- aggregate_exp_data(m = seu_pbmc@assays$RNA$data, md = seu_pbmc@meta.data, aggr_col = seurat_clusters, sample_col = simulated_donors, n_cells_min = 20, n_cells_normalize = 10000, min_n_samples_aggr = 3, mode = "count")
 #'
 #' # Identify markers
 #' group_markers(m = m_aggr, output_path = "~")
